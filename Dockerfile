@@ -17,7 +17,8 @@ COPY cli ./cli
 COPY shared ./shared
 
 # Generate lockfile and build release binaries
-RUN cargo generate-lockfile && cargo build --release -p flaglite-api -p flaglite-cli
+# Note: CLI package is named 'flaglite', API is 'flaglite-api'
+RUN cargo generate-lockfile && cargo build --release -p flaglite-api -p flaglite
 
 # Runtime stage
 FROM debian:bookworm-slim
