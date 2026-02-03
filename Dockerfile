@@ -1,6 +1,6 @@
 # Build stage
-# Build stage - using stable Rust
-FROM rust:1.84-slim-bookworm AS builder
+# Build stage - using latest stable Rust
+FROM rust:latest AS builder
 
 WORKDIR /app
 
