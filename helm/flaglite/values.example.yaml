@@ -1,0 +1,77 @@
+# Example values for FlagLite Helm chart
+# Copy this file and customize for your environment:
+#   cp values.example.yaml my-values.yaml
+#   helm install flaglite ./flaglite -f my-values.yaml
+
+# -----------------------------------------------------------------------------
+# MINIMAL PRODUCTION SETUP
+# -----------------------------------------------------------------------------
+# Uncomment and customize the sections you need
+
+# Your domain
+ingress:
+  enabled: true
+  hosts:
+    - host: flags.yourcompany.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: flaglite-tls
+      hosts:
+        - flags.yourcompany.com
+
+# PostgreSQL (recommended for production)
+# First create the secret:
+#   kubectl create secret generic flaglite-db \
+#     --from-literal=database-url='postgres://user:pass@host:5432/flaglite'
+database:
+  type: postgres
+  postgres:
+    existingSecret: flaglite-db
+
+# JWT secret (auto-generated if not provided)
+# For production, create your own:
+#   kubectl create secret generic flaglite-jwt \
+#     --from-literal=jwt-secret="$(openssl rand -hex 32)"
+jwt:
+  existingSecret: flaglite-jwt
+
+# -----------------------------------------------------------------------------
+# SCALING
+# -----------------------------------------------------------------------------
+
+# Fixed replicas
+replicaCount: 3
+
+# Or use autoscaling
+# autoscaling:
+#   enabled: true
+#   minReplicas: 2
+#   maxReplicas: 10
+#   targetCPUUtilizationPercentage: 70
+
+# -----------------------------------------------------------------------------
+# RESOURCES
+# -----------------------------------------------------------------------------
+
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "500m"
+
+# -----------------------------------------------------------------------------
+# SQLITE (simple setup, not for production)
+# -----------------------------------------------------------------------------
+# For testing or single-replica deployments:
+#
+# database:
+#   type: sqlite
+#   sqlitePath: /data/flaglite.db
+#
+# persistence:
+#   enabled: true
+#   size: 1Gi
