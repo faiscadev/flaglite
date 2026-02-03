@@ -16,9 +16,10 @@ COPY api ./api
 COPY cli ./cli
 COPY shared ./shared
 
-# Build release binaries
+# Build release binaries with both sqlite and postgres support
 # Note: CLI package is named 'flaglite', API is 'flaglite-api'
-RUN cargo build --release -p flaglite-api -p flaglite
+RUN cargo build --release -p flaglite-api --features "sqlite,postgres" && \
+    cargo build --release -p flaglite
 
 # Runtime stage
 FROM debian:bookworm-slim
@@ -44,7 +45,7 @@ RUN mkdir -p /data && chown flaglite:flaglite /data
 USER flaglite
 
 # Default environment
-ENV DATABASE_URL=sqlite:/data/flaglite.db
+# Note: DATABASE_URL should be provided at runtime (sqlite:/path or postgres://...)
 ENV RUST_LOG=info
 
 EXPOSE 8080
