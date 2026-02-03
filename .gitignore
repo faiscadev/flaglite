@@ -1,0 +1,26 @@
+# Build artifacts
+/target/
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+
+# Environment
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# SDKs are in separate repos
+/sdks/
+
+# Dashboard build output
+/dashboard/dist/
+/dashboard/node_modules/

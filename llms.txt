@@ -1,0 +1,225 @@
+# FlagLite - Feature Flags for Everyone
+
+> Open source feature flags. Single binary. Works everywhere.
+
+## What is FlagLite?
+
+FlagLite lets you turn features on and off without redeploying your app. 
+You can show new features to some users first, then roll out to everyone if it works.
+If something breaks, turn it off instantly.
+
+## Quick Start
+
+Install the SDK:
+```bash
+npm install flaglite        # JavaScript/TypeScript
+pip install flaglite        # Python
+go get github.com/faiscadev/flaglite-go  # Go
+cargo add flaglite          # Rust
+```
+
+Set your API key:
+```bash
+export FLAGLITE_API_KEY=fl_env_xxxxx
+```
+
+## Common Tasks
+
+### "Show a feature to only some users"
+
+```javascript
+import { FlagLite } from 'flaglite';
+
+const flags = new FlagLite();
+
+if (await flags.enabled('new-checkout')) {
+  showNewCheckout();
+} else {
+  showOldCheckout();
+}
+```
+
+### "Show to 10% of users first"
+
+Create the flag with 10% rollout in the dashboard or CLI:
+```bash
+flaglite flags create new-checkout --rollout 10
+```
+
+Then check it with a user ID for consistent bucketing:
+```javascript
+// Same user always gets the same result
+if (await flags.enabled('new-checkout', { userId: user.id })) {
+  showNewCheckout();
+}
+```
+
+### "Turn off a feature immediately" (kill switch)
+
+```bash
+flaglite flags toggle new-checkout --env prod
+```
+
+Or in the dashboard: click the toggle switch.
+
+### "Test something in staging first"
+
+Each environment (dev, staging, prod) has its own API key. Use the staging key:
+```bash
+export FLAGLITE_API_KEY=fl_env_staging_xxxxx
+```
+
+### "A/B test two versions"
+
+Create a flag, set rollout to 50%, and use the result:
+```javascript
+if (await flags.enabled('checkout-variant-b', { userId: user.id })) {
+  showVariantB();
+} else {
+  showVariantA();
+}
+```
+
+### "Roll out gradually"
+
+Start at 10%, then increase:
+```bash
+flaglite flags update new-checkout --rollout 10  # Start small
+flaglite flags update new-checkout --rollout 50  # Expand
+flaglite flags update new-checkout --rollout 100 # Full rollout
+```
+
+## SDK Examples
+
+### JavaScript/TypeScript
+
+```javascript
+import { FlagLite } from 'flaglite';
+
+const flags = new FlagLite(); // Reads FLAGLITE_API_KEY automatically
+
+// Simple check
+if (await flags.enabled('dark-mode')) {
+  enableDarkMode();
+}
+
+// With user ID for percentage rollouts
+if (await flags.enabled('new-feature', { userId: user.id })) {
+  showNewFeature();
+}
+```
+
+### Python
+
+```python
+from flaglite import FlagLite
+
+flags = FlagLite()  # Reads FLAGLITE_API_KEY automatically
+
+# Async
+if await flags.enabled('dark-mode'):
+    enable_dark_mode()
+
+# With user ID
+if await flags.enabled('new-feature', user_id=user.id):
+    show_new_feature()
+
+# Sync version available too
+if flags.enabled_sync('dark-mode'):
+    enable_dark_mode()
+```
+
+### Go
+
+```go
+package main
+
+import "github.com/faiscadev/flaglite-go"
+
+func main() {
+    client := flaglite.New() // Reads FLAGLITE_API_KEY automatically
+
+    if client.Enabled("dark-mode") {
+        enableDarkMode()
+    }
+
+    // With user ID
+    if client.Enabled("new-feature", flaglite.WithUserID(user.ID)) {
+        showNewFeature()
+    }
+}
+```
+
+### Rust
+
+```rust
+use flaglite::FlagLite;
+
+#[tokio::main]
+async fn main() {
+    let client = FlagLite::new().unwrap(); // Reads FLAGLITE_API_KEY automatically
+
+    if client.enabled("dark-mode").await {
+        enable_dark_mode();
+    }
+
+    // With user ID
+    if client.enabled_for_user("new-feature", user_id).await {
+        show_new_feature();
+    }
+}
+```
+
+## CLI Commands
+
+```bash
+# Auth
+flaglite login              # Login with email/password
+flaglite whoami             # See current user
+
+# Flags
+flaglite flags list         # List all flags
+flaglite flags create NAME  # Create a flag
+flaglite flags toggle NAME  # Turn on/off
+flaglite flags delete NAME  # Delete a flag
+
+# Options
+--env staging               # Target specific environment
+--rollout 50                # Set percentage (0-100)
+--format json               # Output as JSON
+```
+
+## Self-Hosting
+
+Run FlagLite on your own infrastructure:
+
+```bash
+# Download
+curl -fsSL https://flaglite.dev/install.sh | sh
+
+# Run (uses SQLite by default)
+./flaglite serve --port 8080
+
+# Or with PostgreSQL
+DATABASE_URL=postgres://... ./flaglite serve
+```
+
+Single binary. No dependencies. 6.9MB.
+
+## Links
+
+- Website: https://flaglite.dev
+- Docs: https://docs.flaglite.dev
+- GitHub: https://github.com/faiscadev/flaglite
+- Dashboard: https://app.flaglite.dev
+
+## FAQ
+
+**Q: What happens if FlagLite is down?**
+A: SDKs cache flags locally and fail closed (return false) on errors. Your app keeps working.
+
+**Q: Is it free?**
+A: Open source and free to self-host. Hosted version is $19/month.
+
+**Q: How is this different from LaunchDarkly?**
+A: FlagLite is simpler, open source, and you can self-host. LaunchDarkly is enterprise-focused with more features and complexity.

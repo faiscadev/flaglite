@@ -1,0 +1,54 @@
+[package]
+name = "flaglite-api"
+version = "0.1.0"
+edition = "2021"
+description = "FlagLite API Server - Lightweight feature flag service"
+authors = ["Faisca Engineering"]
+
+[[bin]]
+name = "flaglite-api"
+path = "src/main.rs"
+
+[features]
+default = ["sqlite"]
+sqlite = ["sqlx/sqlite"]
+postgres = ["sqlx/postgres"]
+
+[dependencies]
+# Web framework
+axum = { version = "0.7", features = ["macros"] }
+tokio = { version = "1", features = ["full"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio", "uuid", "chrono"] }
+
+# Auth
+jsonwebtoken = "9"
+bcrypt = "0.15"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Utilities
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+rand = "0.8"
+murmur3 = "0.5"
+thiserror = "1"
+anyhow = "1"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Config
+dotenvy = "0.15"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+[dev-dependencies]
+reqwest = { version = "0.11", features = ["json"] }

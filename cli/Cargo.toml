@@ -1,0 +1,25 @@
+[package]
+name = "flaglite"
+version.workspace = true
+edition = "2021"
+description = "CLI for FlagLite feature flag management"
+
+[[bin]]
+name = "flaglite"
+path = "src/main.rs"
+
+[dependencies]
+flaglite-shared = { path = "../shared" }
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+reqwest.workspace = true
+anyhow.workspace = true
+chrono.workspace = true
+
+clap = { version = "4.5", features = ["derive", "env"] }
+colored = "2.1"
+dialoguer = { version = "0.11", features = ["password"] }
+dirs = "5.0"
+toml = "0.8"
+tabled = "0.17"

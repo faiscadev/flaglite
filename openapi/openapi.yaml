@@ -1,0 +1,984 @@
+openapi: 3.0.3
+info:
+  title: FlagLite API
+  version: 1.0.0
+  description: |
+    FlagLite is a simple, fast feature flag service designed for the "30-second integration" experience.
+    
+    ## Authentication
+    
+    FlagLite uses Bearer token authentication with two types of API keys:
+    
+    - **Environment API Keys** (`ffl_env_xxxxx`): Read-only keys for SDK flag evaluation. Each environment (development, staging, production) has its own key.
+    - **Project API Keys** (`ffl_proj_xxxxx`): Full access keys for dashboard operations (create, update, delete flags).
+    - **JWT Tokens**: Returned from login/signup for user authentication.
+    
+    Include the token in the `Authorization` header:
+    ```
+    Authorization: Bearer <token>
+    ```
+    
+    ## Rate Limiting
+    
+    - 1000 requests/minute per API key
+    - Rate limit headers included in responses: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
+  contact:
+    name: FlagLite Support
+    email: support@flaglite.dev
+    url: https://flaglite.dev
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.flaglite.dev/v1
+    description: Production server
+  - url: https://api.staging.flaglite.dev/v1
+    description: Staging server
+  - url: http://localhost:3000/v1
+    description: Local development
+
+tags:
+  - name: Authentication
+    description: User signup, login, and profile management
+  - name: Flags
+    description: Feature flag management and evaluation
+
+paths:
+  /auth/signup:
+    post:
+      operationId: signup
+      summary: Create a new user account
+      description: |
+        Register a new user account. On successful signup:
+        - A new user is created
+        - A default project is automatically created
+        - Three environments (development, staging, production) are created
+        - API keys are generated and returned (only shown once!)
+        
+        Store the API keys securely—they cannot be retrieved again.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+            example:
+              email: developer@example.com
+              password: securePassword123!
+              name: Jane Developer
+      responses:
+        '201':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResponse'
+              example:
+                user:
+                  id: "550e8400-e29b-41d4-a716-446655440000"
+                  email: developer@example.com
+                  name: Jane Developer
+                  created_at: "2026-02-03T10:30:00Z"
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                project:
+                  id: "660e8400-e29b-41d4-a716-446655440001"
+                  name: My First Project
+                  api_key: "ffl_proj_k8j2m9x4n7p1q5w3"
+                  environments:
+                    - name: development
+                      api_key: "ffl_env_dev_a1b2c3d4e5f6g7h8"
+                    - name: staging
+                      api_key: "ffl_env_stg_i9j0k1l2m3n4o5p6"
+                    - name: production
+                      api_key: "ffl_env_prd_q7r8s9t0u1v2w3x4"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: conflict
+                message: An account with this email already exists
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /auth/login:
+    post:
+      operationId: login
+      summary: Authenticate and get access token
+      description: |
+        Authenticate with email and password to receive a JWT access token.
+        
+        The token is valid for 7 days. Include it in the `Authorization` header for authenticated requests:
+        ```
+        Authorization: Bearer <token>
+        ```
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: developer@example.com
+              password: securePassword123!
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              example:
+                user:
+                  id: "550e8400-e29b-41d4-a716-446655440000"
+                  email: developer@example.com
+                  name: Jane Developer
+                  created_at: "2026-02-03T10:30:00Z"
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                expires_at: "2026-02-10T10:30:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: unauthorized
+                message: Invalid email or password
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      summary: Get current user profile
+      description: |
+        Returns the authenticated user's profile information including their projects.
+        
+        Requires a valid JWT token in the Authorization header.
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+              example:
+                id: "550e8400-e29b-41d4-a716-446655440000"
+                email: developer@example.com
+                name: Jane Developer
+                created_at: "2026-02-03T10:30:00Z"
+                projects:
+                  - id: "660e8400-e29b-41d4-a716-446655440001"
+                    name: My First Project
+                    created_at: "2026-02-03T10:30:00Z"
+                    flag_count: 5
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /flags:
+    get:
+      operationId: listFlags
+      summary: List all flags in a project
+      description: |
+        Returns all feature flags for the authenticated project, including their values across all environments.
+        
+        Requires a **Project API Key** (`ffl_proj_xxxxx`) for authentication.
+      tags:
+        - Flags
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of flags to return (default 50, max 100)
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          description: Number of flags to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: search
+          in: query
+          description: Filter flags by key or name (case-insensitive partial match)
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        '200':
+          description: Flags retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlagListResponse'
+              example:
+                flags:
+                  - key: new-checkout
+                    name: New Checkout Flow
+                    description: Redesigned checkout experience with improved UX
+                    created_at: "2026-02-01T09:00:00Z"
+                    environments:
+                      development:
+                        enabled: true
+                        rollout_percentage: 100
+                        updated_at: "2026-02-01T09:00:00Z"
+                      staging:
+                        enabled: true
+                        rollout_percentage: 100
+                        updated_at: "2026-02-01T12:00:00Z"
+                      production:
+                        enabled: true
+                        rollout_percentage: 10
+                        updated_at: "2026-02-02T15:30:00Z"
+                  - key: dark-mode
+                    name: Dark Mode
+                    description: Enable dark mode theme
+                    created_at: "2026-02-02T14:00:00Z"
+                    environments:
+                      development:
+                        enabled: true
+                        rollout_percentage: 100
+                        updated_at: "2026-02-02T14:00:00Z"
+                      staging:
+                        enabled: true
+                        rollout_percentage: 100
+                        updated_at: "2026-02-02T14:00:00Z"
+                      production:
+                        enabled: false
+                        rollout_percentage: 0
+                        updated_at: "2026-02-02T14:00:00Z"
+                pagination:
+                  total: 2
+                  limit: 50
+                  offset: 0
+                  has_more: false
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+    post:
+      operationId: createFlag
+      summary: Create a new feature flag
+      description: |
+        Creates a new feature flag in the project. The flag is automatically disabled in all environments with 100% rollout.
+        
+        Requires a **Project API Key** (`ffl_proj_xxxxx`) for authentication.
+        
+        **Flag key constraints:**
+        - Must be unique within the project
+        - 1-255 characters
+        - Alphanumeric, hyphens, and underscores only
+        - Must start with a letter
+      tags:
+        - Flags
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFlagRequest'
+            example:
+              key: new-checkout
+              name: New Checkout Flow
+              description: Redesigned checkout experience with improved UX
+      responses:
+        '201':
+          description: Flag created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Flag'
+              example:
+                key: new-checkout
+                name: New Checkout Flow
+                description: Redesigned checkout experience with improved UX
+                created_at: "2026-02-03T10:55:00Z"
+                environments:
+                  development:
+                    enabled: false
+                    rollout_percentage: 100
+                    updated_at: "2026-02-03T10:55:00Z"
+                  staging:
+                    enabled: false
+                    rollout_percentage: 100
+                    updated_at: "2026-02-03T10:55:00Z"
+                  production:
+                    enabled: false
+                    rollout_percentage: 100
+                    updated_at: "2026-02-03T10:55:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Flag key already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: conflict
+                message: A flag with key 'new-checkout' already exists in this project
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /flags/{key}:
+    get:
+      operationId: evaluateFlag
+      summary: Evaluate a feature flag (SDK endpoint)
+      description: |
+        Evaluates a feature flag and returns whether it's enabled for the current request.
+        
+        This is the primary endpoint for SDKs to check flag values. Requires an **Environment API Key** (`ffl_env_xxxxx`).
+        
+        **Percentage rollouts:**
+        - If `user_id` is provided, the result is deterministic (sticky bucketing)
+        - Same user always gets the same result for the same flag
+        - Without `user_id`, each evaluation is random
+        
+        **Error handling:**
+        - Returns `enabled: false` for non-existent flags (fail closed)
+        - SDKs should cache results (30s TTL recommended)
+      tags:
+        - Flags
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: key
+          in: path
+          required: true
+          description: The unique flag key
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 255
+            pattern: '^[a-zA-Z][a-zA-Z0-9_-]*$'
+          example: new-checkout
+        - name: user_id
+          in: query
+          description: User identifier for consistent percentage rollouts (sticky bucketing)
+          schema:
+            type: string
+            maxLength: 255
+          example: user_12345
+      responses:
+        '200':
+          description: Flag evaluated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlagEvaluation'
+              example:
+                key: new-checkout
+                enabled: true
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Flag not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlagEvaluation'
+              example:
+                key: nonexistent-flag
+                enabled: false
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /flags/{key}/environments/{env}:
+    patch:
+      operationId: updateFlagValue
+      summary: Update flag value for an environment
+      description: |
+        Updates the enabled state and/or rollout percentage for a flag in a specific environment.
+        
+        Requires a **Project API Key** (`ffl_proj_xxxxx`) for authentication.
+        
+        **Rollout percentage behavior:**
+        - 0-100 integer value
+        - Users are bucketed deterministically when `user_id` is provided to evaluate
+        - Increasing percentage adds users; existing users keep their state
+      tags:
+        - Flags
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: key
+          in: path
+          required: true
+          description: The unique flag key
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 255
+            pattern: '^[a-zA-Z][a-zA-Z0-9_-]*$'
+          example: new-checkout
+        - name: env
+          in: path
+          required: true
+          description: The environment name
+          schema:
+            type: string
+            enum:
+              - development
+              - staging
+              - production
+          example: production
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFlagValueRequest'
+            examples:
+              enable:
+                summary: Enable flag at 100%
+                value:
+                  enabled: true
+                  rollout_percentage: 100
+              gradual_rollout:
+                summary: Gradual rollout to 25%
+                value:
+                  enabled: true
+                  rollout_percentage: 25
+              disable:
+                summary: Disable flag
+                value:
+                  enabled: false
+      responses:
+        '200':
+          description: Flag value updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlagValue'
+              example:
+                key: new-checkout
+                environment: production
+                enabled: true
+                rollout_percentage: 25
+                updated_at: "2026-02-03T11:00:00Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Flag or environment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: not_found
+                message: Flag 'new-checkout' not found
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+  /flags/{key}/toggle:
+    post:
+      operationId: toggleFlag
+      summary: Toggle a flag on/off
+      description: |
+        Convenience endpoint to toggle a flag's enabled state in a specific environment.
+        
+        Requires a **Project API Key** (`ffl_proj_xxxxx`) for authentication.
+        
+        The rollout percentage is preserved when toggling.
+      tags:
+        - Flags
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: key
+          in: path
+          required: true
+          description: The unique flag key
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 255
+            pattern: '^[a-zA-Z][a-zA-Z0-9_-]*$'
+          example: new-checkout
+        - name: environment
+          in: query
+          required: true
+          description: The environment to toggle the flag in
+          schema:
+            type: string
+            enum:
+              - development
+              - staging
+              - production
+          example: production
+      responses:
+        '200':
+          description: Flag toggled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlagToggleResponse'
+              example:
+                key: new-checkout
+                environment: production
+                enabled: false
+                previous_enabled: true
+                updated_at: "2026-02-03T11:05:00Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Flag not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: not_found
+                message: Flag 'new-checkout' not found
+        '422':
+          description: Missing required environment parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: validation_error
+                message: Query parameter 'environment' is required
+        '429':
+          $ref: '#/components/responses/RateLimited'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT or API Key
+      description: |
+        Use one of the following token types:
+        - **JWT Token**: Returned from `/auth/login` or `/auth/signup` for user authentication
+        - **Project API Key** (`ffl_proj_xxxxx`): For dashboard/management operations
+        - **Environment API Key** (`ffl_env_xxxxx`): For SDK flag evaluation
+
+  schemas:
+    # Auth Schemas
+    SignupRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: User's email address
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 128
+          description: Password (min 8 characters, must include letter and number)
+        name:
+          type: string
+          maxLength: 255
+          description: User's display name (optional)
+
+    SignupResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        token:
+          type: string
+          description: JWT access token (valid for 7 days)
+        project:
+          $ref: '#/components/schemas/ProjectWithKeys'
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: User's email address
+        password:
+          type: string
+          format: password
+          description: User's password
+
+    LoginResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        token:
+          type: string
+          description: JWT access token
+        expires_at:
+          type: string
+          format: date-time
+          description: Token expiration timestamp
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique user identifier
+        email:
+          type: string
+          format: email
+          description: User's email address
+        name:
+          type: string
+          description: User's display name
+        created_at:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+
+    UserProfile:
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            projects:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProjectSummary'
+
+    ProjectSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        flag_count:
+          type: integer
+          description: Number of flags in this project
+
+    ProjectWithKeys:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        api_key:
+          type: string
+          description: Project API key (shown only once!)
+          example: ffl_proj_k8j2m9x4n7p1q5w3
+        environments:
+          type: array
+          items:
+            $ref: '#/components/schemas/EnvironmentWithKey'
+
+    EnvironmentWithKey:
+      type: object
+      properties:
+        name:
+          type: string
+          enum:
+            - development
+            - staging
+            - production
+        api_key:
+          type: string
+          description: Environment API key for SDK (shown only once!)
+          example: ffl_env_dev_a1b2c3d4e5f6g7h8
+
+    # Flag Schemas
+    Flag:
+      type: object
+      properties:
+        key:
+          type: string
+          description: Unique flag identifier (used in code)
+          example: new-checkout
+        name:
+          type: string
+          description: Human-readable flag name
+          example: New Checkout Flow
+        description:
+          type: string
+          nullable: true
+          description: Optional description of the flag's purpose
+        created_at:
+          type: string
+          format: date-time
+          description: Flag creation timestamp
+        environments:
+          type: object
+          description: Flag values per environment
+          additionalProperties:
+            $ref: '#/components/schemas/EnvironmentValue'
+
+    EnvironmentValue:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          description: Whether the flag is enabled
+        rollout_percentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Percentage of users who see the flag enabled
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    FlagListResponse:
+      type: object
+      properties:
+        flags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flag'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    Pagination:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total number of items
+        limit:
+          type: integer
+          description: Items per page
+        offset:
+          type: integer
+          description: Current offset
+        has_more:
+          type: boolean
+          description: Whether more items exist
+
+    CreateFlagRequest:
+      type: object
+      required:
+        - key
+        - name
+      properties:
+        key:
+          type: string
+          minLength: 1
+          maxLength: 255
+          pattern: '^[a-zA-Z][a-zA-Z0-9_-]*$'
+          description: |
+            Unique flag identifier. Must start with a letter, can contain letters, numbers, hyphens, and underscores.
+          example: new-checkout
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Human-readable flag name
+          example: New Checkout Flow
+        description:
+          type: string
+          maxLength: 1000
+          description: Optional description
+          example: Redesigned checkout experience with improved UX
+
+    UpdateFlagValueRequest:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+          description: Enable or disable the flag
+        rollout_percentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Percentage of users who see the flag enabled
+      minProperties: 1
+
+    FlagValue:
+      type: object
+      properties:
+        key:
+          type: string
+          description: Flag key
+        environment:
+          type: string
+          description: Environment name
+        enabled:
+          type: boolean
+          description: Current enabled state
+        rollout_percentage:
+          type: integer
+          description: Current rollout percentage
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp
+
+    FlagEvaluation:
+      type: object
+      properties:
+        key:
+          type: string
+          description: The evaluated flag key
+        enabled:
+          type: boolean
+          description: Whether the flag is enabled for this request
+
+    FlagToggleResponse:
+      type: object
+      properties:
+        key:
+          type: string
+          description: Flag key
+        environment:
+          type: string
+          description: Environment that was toggled
+        enabled:
+          type: boolean
+          description: New enabled state
+        previous_enabled:
+          type: boolean
+          description: Previous enabled state
+        updated_at:
+          type: string
+          format: date-time
+          description: Update timestamp
+
+    # Error Schemas
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: not_found
+        message:
+          type: string
+          description: Human-readable error message
+          example: The requested resource was not found
+
+    ValidationError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: validation_error
+        message:
+          type: string
+          example: Validation failed
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: Field that failed validation
+              message:
+                type: string
+                description: Validation error message
+          example:
+            - field: email
+              message: Must be a valid email address
+            - field: password
+              message: Must be at least 8 characters
+
+  responses:
+    BadRequest:
+      description: Bad request - malformed JSON or invalid request format
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: bad_request
+            message: Invalid JSON in request body
+
+    Unauthorized:
+      description: Authentication required or invalid credentials
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: unauthorized
+            message: Invalid or missing API key
+
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+
+    RateLimited:
+      description: Too many requests
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Request limit per minute
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Remaining requests in current window
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: Unix timestamp when the rate limit resets
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until rate limit resets
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: rate_limited
+            message: Rate limit exceeded. Try again in 60 seconds.

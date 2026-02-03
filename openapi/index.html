@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlagLite API Documentation</title>
+  <meta name="description" content="FlagLite API Reference - Simple, fast feature flags for developers">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚩</text></svg>">
+  
+  <!-- Redoc Styles -->
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Custom theme overrides */
+    .redoc-wrap {
+      --primary-color: #6366f1;
+    }
+    
+    /* Loading state */
+    #loading {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #6366f1;
+    }
+    
+    #loading .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    #loading p {
+      margin-top: 16px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading indicator -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <p>Loading API documentation...</p>
+  </div>
+  
+  <!-- Redoc container -->
+  <div id="redoc-container"></div>
+  
+  <!-- Redoc from CDN -->
+  <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+  
+  <script>
+    // Hide loading indicator when Redoc is ready
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize Redoc
+      Redoc.init('./openapi.yaml', {
+        // Theme configuration
+        theme: {
+          colors: {
+            primary: {
+              main: '#6366f1'
+            },
+            success: {
+              main: '#10b981'
+            },
+            warning: {
+              main: '#f59e0b'
+            },
+            error: {
+              main: '#ef4444'
+            },
+            text: {
+              primary: '#1f2937',
+              secondary: '#6b7280'
+            },
+            http: {
+              get: '#10b981',
+              post: '#3b82f6',
+              put: '#f59e0b',
+              patch: '#8b5cf6',
+              delete: '#ef4444'
+            }
+          },
+          typography: {
+            fontSize: '15px',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+            headings: {
+              fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+              fontWeight: '600'
+            },
+            code: {
+              fontSize: '13px',
+              fontFamily: '"SF Mono", "Monaco", "Inconsolata", "Fira Mono", "Droid Sans Mono", monospace'
+            }
+          },
+          sidebar: {
+            backgroundColor: '#f9fafb',
+            textColor: '#374151',
+            activeTextColor: '#6366f1',
+            width: '260px'
+          },
+          rightPanel: {
+            backgroundColor: '#1f2937',
+            textColor: '#e5e7eb'
+          }
+        },
+        // Feature toggles
+        scrollYOffset: 0,
+        hideDownloadButton: false,
+        hideHostname: false,
+        expandResponses: '200,201',
+        requiredPropsFirst: true,
+        sortPropsAlphabetically: false,
+        pathInMiddlePanel: true,
+        jsonSampleExpandLevel: 2,
+        hideSingleRequestSampleTab: true,
+        nativeScrollbars: true
+      }, document.getElementById('redoc-container'), function() {
+        // Callback when Redoc finishes loading
+        document.getElementById('loading').style.display = 'none';
+      });
+    });
+  </script>
+</body>
+</html>
