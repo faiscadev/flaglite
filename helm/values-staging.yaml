@@ -24,8 +24,15 @@ resources:
     memory: "128Mi"
     cpu: "250m"
 
+# Postgres for staging
+database:
+  type: postgres
+  postgres:
+    existingSecret: flaglite-db-credentials
+
+# Disable SQLite persistence since using Postgres
 persistence:
-  size: 512Mi
+  enabled: false
 
 logging:
   level: debug
