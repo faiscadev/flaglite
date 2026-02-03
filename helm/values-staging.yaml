@@ -1,0 +1,31 @@
+# Staging environment values
+
+replicaCount: 1
+
+image:
+  tag: latest
+
+ingress:
+  hosts:
+    - host: api.staging.flaglite.dev
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: flaglite-staging-tls
+      hosts:
+        - api.staging.flaglite.dev
+
+resources:
+  requests:
+    memory: "32Mi"
+    cpu: "50m"
+  limits:
+    memory: "128Mi"
+    cpu: "250m"
+
+persistence:
+  size: 512Mi
+
+logging:
+  level: debug

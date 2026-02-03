@@ -1,0 +1,115 @@
+# Default values for FlagLite
+
+replicaCount: 2
+
+image:
+  repository: ghcr.io/faiscadev/flaglite
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: api.flaglite.dev
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: flaglite-tls
+      hosts:
+        - api.flaglite.dev
+
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "500m"
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 1Gi
+
+# Database configuration
+database:
+  # "sqlite" or "postgres"
+  type: sqlite
+  # For SQLite (default)
+  sqlitePath: /data/flaglite.db
+  # For PostgreSQL (set type: postgres and configure these)
+  postgres:
+    host: ""
+    port: 5432
+    database: flaglite
+    # Use existingSecret for credentials
+    existingSecret: ""
+    usernameKey: username
+    passwordKey: password
+
+# JWT secret for authentication
+jwt:
+  # Use existingSecret to reference an existing secret
+  existingSecret: ""
+  secretKey: jwt-secret
+  # Or set directly (not recommended for production)
+  secret: ""
+
+# Logging
+logging:
+  level: info
+
+# Health checks
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

@@ -1,0 +1,44 @@
+# Production environment values
+
+replicaCount: 3
+
+image:
+  tag: latest
+  pullPolicy: Always
+
+ingress:
+  hosts:
+    - host: api.flaglite.dev
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: flaglite-prod-tls
+      hosts:
+        - api.flaglite.dev
+
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "1000m"
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+persistence:
+  size: 5Gi
+
+# For production, use PostgreSQL
+# database:
+#   type: postgres
+#   postgres:
+#     existingSecret: flaglite-db-credentials
+
+logging:
+  level: info

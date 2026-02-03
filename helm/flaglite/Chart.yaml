@@ -1,0 +1,17 @@
+apiVersion: v2
+name: flaglite
+description: FlagLite - Feature flags for everyone. Fast, simple, open-source.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - feature-flags
+  - feature-toggles
+  - rust
+  - api
+home: https://flaglite.dev
+sources:
+  - https://github.com/faiscadev/flaglite
+maintainers:
+  - name: Faísca Engineering
+    email: engineering@faisca.dev
