@@ -10,15 +10,15 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy workspace files (no Cargo.lock - let cargo regenerate)
-COPY Cargo.toml ./
+# Copy workspace files
+COPY Cargo.toml Cargo.lock ./
 COPY api ./api
 COPY cli ./cli
 COPY shared ./shared
 
-# Generate lockfile and build release binaries
+# Build release binaries
 # Note: CLI package is named 'flaglite', API is 'flaglite-api'
-RUN cargo generate-lockfile && cargo build --release -p flaglite-api -p flaglite
+RUN cargo build --release -p flaglite-api -p flaglite
 
 # Runtime stage
 FROM debian:bookworm-slim
