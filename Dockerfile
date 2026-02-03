@@ -1,6 +1,6 @@
 # Build stage
 # Using nightly for edition2024 feature required by time-core
-FROM rust:nightly-slim-bookworm AS builder
+FROM rust:nightly-bookworm-slim AS builder
 
 WORKDIR /app
 
