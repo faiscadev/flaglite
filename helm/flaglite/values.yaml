@@ -81,6 +81,31 @@ database:
     usernameKey: username
     passwordKey: password
 
+# PostgreSQL subchart (optional - enable for bundled Postgres)
+# When enabled, database.type is automatically set to "postgres"
+# and connection is configured to use the subchart
+postgresql:
+  enabled: false
+  # Auth configuration
+  auth:
+    database: flaglite
+    username: flaglite
+    # Password is auto-generated if not set
+    # password: ""
+    # existingSecret: ""
+  # Persistence
+  primary:
+    persistence:
+      enabled: true
+      size: 10Gi
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
 # JWT secret for authentication
 jwt:
   # Use existingSecret to reference an existing secret
