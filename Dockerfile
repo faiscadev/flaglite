@@ -51,3 +51,4 @@ ENV RUST_LOG=info
 EXPOSE 8080
 
 CMD ["flaglite-api", "serve", "--port", "8080"]
+# Force rebuild 1770237578
