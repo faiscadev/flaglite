@@ -16,9 +16,9 @@ COPY api ./api
 COPY cli ./cli
 COPY shared ./shared
 
-# Build release binaries with postgres support (for production)
+# Build release binaries with both sqlite and postgres support (runtime selection)
 # Note: CLI package is named 'flaglite', API is 'flaglite-api'
-RUN cargo build --release -p flaglite-api --no-default-features --features "postgres" && \
+RUN cargo build --release -p flaglite-api && \
     cargo build --release -p flaglite
 
 # Runtime stage
