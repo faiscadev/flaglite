@@ -146,6 +146,24 @@ tolerations: []
 
 affinity: {}
 
+# Monitoring configuration (requires Prometheus Operator)
+monitoring:
+  # Enable ServiceMonitor for Prometheus scraping
+  enabled: false
+  serviceMonitor:
+    # Scrape interval
+    interval: 30s
+    # Scrape timeout (optional)
+    scrapeTimeout: ""
+    # Additional labels for ServiceMonitor (for Prometheus selector)
+    labels: {}
+  # Alerting rules
+  alerts:
+    # Enable PrometheusRule with alerting rules
+    enabled: false
+    # Additional labels for PrometheusRule (for Prometheus selector)
+    labels: {}
+
 # PostgreSQL backup configuration (only used when postgresql.enabled: true)
 backup:
   enabled: false

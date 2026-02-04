@@ -468,6 +468,101 @@ services:
 
 ---
 
+## Monitoring
+
+FlagLite exposes Prometheus metrics at `/metrics` and the Helm chart includes optional ServiceMonitor and alerting rules for Prometheus Operator.
+
+### Prerequisites
+
+- [Prometheus Operator](https://prometheus-operator.dev/) installed in your cluster
+- Prometheus configured to discover ServiceMonitors (check your Prometheus `serviceMonitorSelector`)
+
+### Enable ServiceMonitor
+
+Add to your values file or Helm command:
+
+```yaml
+# values.yaml
+monitoring:
+  enabled: true
+  serviceMonitor:
+    interval: 30s
+    # Add labels if your Prometheus requires specific selectors
+    labels:
+      release: prometheus
+```
+
+Or via CLI:
+```bash
+helm install flaglite ./helm/flaglite \
+  --namespace flaglite \
+  --set monitoring.enabled=true \
+  --set monitoring.serviceMonitor.labels.release=prometheus
+```
+
+### Enable Alerting Rules
+
+The chart includes these alerts:
+
+| Alert | Severity | Description |
+|-------|----------|-------------|
+| **FlagLitePodDown** | Critical | No healthy pods for 5 minutes |
+| **FlagLiteHighErrorRate** | Warning | >5% of requests returning 5xx errors |
+| **FlagLiteHighLatency** | Warning | p99 latency exceeds 500ms |
+| **FlagLitePodRestarting** | Warning | Pod restarted >3 times in an hour |
+
+Enable alerts:
+
+```yaml
+monitoring:
+  enabled: true
+  alerts:
+    enabled: true
+    # Add labels if your Prometheus requires specific selectors
+    labels:
+      release: prometheus
+```
+
+### Grafana Dashboard
+
+Import FlagLite metrics into Grafana with these useful queries:
+
+```promql
+# Request rate
+sum(rate(http_requests_total{job="flaglite"}[5m]))
+
+# Error rate percentage
+sum(rate(http_requests_total{job="flaglite", status=~"5.."}[5m])) 
+/ sum(rate(http_requests_total{job="flaglite"}[5m])) * 100
+
+# P99 latency
+histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="flaglite"}[5m])) by (le))
+
+# Active pods
+sum(up{job="flaglite"})
+```
+
+### Verifying Setup
+
+Check that ServiceMonitor is created:
+```bash
+kubectl get servicemonitor -n flaglite
+# NAME       AGE
+# flaglite   1m
+```
+
+Verify Prometheus is scraping:
+```bash
+# Port-forward to Prometheus
+kubectl port-forward -n monitoring svc/prometheus-operated 9090
+
+# Check targets in browser
+open http://localhost:9090/targets
+# Look for flaglite endpoint with "UP" status
+```
+
+---
+
 ## Troubleshooting
 
 ### Common Issues

@@ -1,0 +1,72 @@
+{{- if and .Values.monitoring.enabled .Values.monitoring.alerts.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "flaglite.fullname" . }}
+  labels:
+    {{- include "flaglite.labels" . | nindent 4 }}
+    {{- with .Values.monitoring.alerts.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    - name: flaglite.rules
+      rules:
+        # Alert when no healthy pods are available for 5 minutes
+        - alert: FlagLitePodDown
+          expr: |
+            sum(up{job="{{ include "flaglite.fullname" . }}"}) == 0
+            or absent(up{job="{{ include "flaglite.fullname" . }}"})
+          for: 5m
+          labels:
+            severity: critical
+            app: {{ include "flaglite.name" . }}
+          annotations:
+            summary: "FlagLite has no healthy pods"
+            description: "No FlagLite pods have been healthy for 5 minutes. Feature flag evaluations will fail."
+            runbook_url: "https://docs.flaglite.dev/runbooks/pod-down"
+
+        # Alert when >5% of requests are 5xx errors (over 5 min window)
+        - alert: FlagLiteHighErrorRate
+          expr: |
+            (
+              sum(rate(http_requests_total{job="{{ include "flaglite.fullname" . }}", status=~"5.."}[5m]))
+              /
+              sum(rate(http_requests_total{job="{{ include "flaglite.fullname" . }}"}[5m]))
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            app: {{ include "flaglite.name" . }}
+          annotations:
+            summary: "FlagLite high error rate"
+            description: "FlagLite is returning >5% 5xx errors. Current error rate: {{ "{{" }} $value | humanizePercentage {{ "}}" }}."
+            runbook_url: "https://docs.flaglite.dev/runbooks/high-error-rate"
+
+        # Alert when p99 latency exceeds 500ms
+        - alert: FlagLiteHighLatency
+          expr: |
+            histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="{{ include "flaglite.fullname" . }}"}[5m])) by (le))
+            > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            app: {{ include "flaglite.name" . }}
+          annotations:
+            summary: "FlagLite high latency"
+            description: "FlagLite p99 latency is above 500ms. Current p99: {{ "{{" }} $value | humanizeDuration {{ "}}" }}."
+            runbook_url: "https://docs.flaglite.dev/runbooks/high-latency"
+
+        # Alert when pods are frequently restarting
+        - alert: FlagLitePodRestarting
+          expr: |
+            increase(kube_pod_container_status_restarts_total{container="{{ .Chart.Name }}"}[1h]) > 3
+          for: 10m
+          labels:
+            severity: warning
+            app: {{ include "flaglite.name" . }}
+          annotations:
+            summary: "FlagLite pod restarting frequently"
+            description: "FlagLite pod {{ "{{" }} $labels.pod {{ "}}" }} has restarted {{ "{{" }} $value {{ "}}" }} times in the last hour."
+            runbook_url: "https://docs.flaglite.dev/runbooks/pod-restarting"
+{{- end }}
