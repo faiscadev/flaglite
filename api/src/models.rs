@@ -2,16 +2,13 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use std::collections::HashMap;
+use std::sync::Arc;
 
-#[cfg(feature = "sqlite")]
-pub type DbPool = sqlx::SqlitePool;
-
-#[cfg(feature = "postgres")]
-pub type DbPool = sqlx::PgPool;
+use crate::storage::Storage;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub pool: DbPool,
+    pub storage: Arc<dyn Storage>,
     pub jwt_secret: String,
 }
 

@@ -10,7 +10,7 @@ use uuid::Uuid;
 use crate::auth::{AuthProject, FlexAuth};
 use crate::error::{AppError, Result};
 use crate::models::{
-    AppState, CreateFlagRequest, Environment, EvaluateFlagQuery, Flag, FlagEnvironmentValue,
+    AppState, CreateFlagRequest, EvaluateFlagQuery, Flag, FlagEnvironmentValue,
     FlagEvaluationResponse, FlagResponse, FlagToggleResponse, FlagValue, ToggleFlagQuery,
     UpdateFlagValueRequest,
 };
@@ -36,14 +36,11 @@ pub async fn evaluate_flag(
     };
 
     // Get the flag
-    let flag: Flag = sqlx::query_as(
-        "SELECT id, project_id, key, name, description, created_at FROM flags WHERE project_id = ? AND key = ?",
-    )
-    .bind(&project_id)
-    .bind(&key)
-    .fetch_optional(&state.pool)
-    .await?
-    .ok_or_else(|| AppError::NotFound(format!("Flag '{}' not found", key)))?;
+    let flag = state
+        .storage
+        .get_flag_by_key(&project_id, &key)
+        .await?
+        .ok_or_else(|| AppError::NotFound(format!("Flag '{}' not found", key)))?;
 
     // If using env API key, get that specific environment's value
     // If using project key, default to production
@@ -51,25 +48,17 @@ pub async fn evaluate_flag(
         Some(id) => id,
         None => {
             // Default to production environment
-            let env: Environment = sqlx::query_as(
-                "SELECT id, project_id, name, api_key, created_at FROM environments WHERE project_id = ? AND name = 'production'",
-            )
-            .bind(&project_id)
-            .fetch_optional(&state.pool)
-            .await?
-            .ok_or_else(|| AppError::NotFound("Production environment not found".to_string()))?;
+            let env = state
+                .storage
+                .get_environment_by_name(&project_id, "production")
+                .await?
+                .ok_or_else(|| AppError::NotFound("Production environment not found".to_string()))?;
             env.id
         }
     };
 
     // Get flag value for this environment
-    let flag_value: Option<FlagValue> = sqlx::query_as(
-        "SELECT id, flag_id, environment_id, enabled, rollout_percentage, updated_at FROM flag_values WHERE flag_id = ? AND environment_id = ?",
-    )
-    .bind(&flag.id)
-    .bind(&env_id)
-    .fetch_optional(&state.pool)
-    .await?;
+    let flag_value = state.storage.get_flag_value(&flag.id, &env_id).await?;
 
     let enabled = match flag_value {
         Some(fv) => {
@@ -103,20 +92,10 @@ pub async fn list_flags(
     AuthProject(project): AuthProject,
 ) -> Result<Json<Vec<FlagResponse>>> {
     // Get all flags for the project
-    let flags: Vec<Flag> = sqlx::query_as(
-        "SELECT id, project_id, key, name, description, created_at FROM flags WHERE project_id = ? ORDER BY created_at DESC",
-    )
-    .bind(&project.id)
-    .fetch_all(&state.pool)
-    .await?;
+    let flags = state.storage.list_flags_by_project(&project.id).await?;
 
     // Get all environments
-    let environments: Vec<Environment> = sqlx::query_as(
-        "SELECT id, project_id, name, api_key, created_at FROM environments WHERE project_id = ?",
-    )
-    .bind(&project.id)
-    .fetch_all(&state.pool)
-    .await?;
+    let environments = state.storage.list_environments_by_project(&project.id).await?;
 
     let env_map: HashMap<String, String> = environments
         .iter()
@@ -125,22 +104,7 @@ pub async fn list_flags(
 
     // Get all flag values
     let flag_ids: Vec<String> = flags.iter().map(|f| f.id.clone()).collect();
-    
-    let flag_values: Vec<FlagValue> = if !flag_ids.is_empty() {
-        let placeholders = flag_ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
-        let query_str = format!(
-            "SELECT id, flag_id, environment_id, enabled, rollout_percentage, updated_at FROM flag_values WHERE flag_id IN ({})",
-            placeholders
-        );
-        
-        let mut query = sqlx::query_as(&query_str);
-        for id in &flag_ids {
-            query = query.bind(id);
-        }
-        query.fetch_all(&state.pool).await?
-    } else {
-        vec![]
-    };
+    let flag_values = state.storage.list_flag_values_by_flag_ids(&flag_ids).await?;
 
     // Group flag values by flag_id
     let mut flag_value_map: HashMap<String, Vec<FlagValue>> = HashMap::new();
@@ -210,13 +174,7 @@ pub async fn create_flag(
     }
 
     // Check for duplicate
-    let existing: Option<Flag> = sqlx::query_as(
-        "SELECT id, project_id, key, name, description, created_at FROM flags WHERE project_id = ? AND key = ?",
-    )
-    .bind(&project.id)
-    .bind(&req.key)
-    .fetch_optional(&state.pool)
-    .await?;
+    let existing = state.storage.get_flag_by_key(&project.id, &req.key).await?;
 
     if existing.is_some() {
         return Err(AppError::BadRequest(format!(
@@ -229,41 +187,34 @@ pub async fn create_flag(
     let flag_id = Uuid::new_v4().to_string();
 
     // Create the flag
-    sqlx::query(
-        "INSERT INTO flags (id, project_id, key, name, description, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-    )
-    .bind(&flag_id)
-    .bind(&project.id)
-    .bind(&req.key)
-    .bind(&req.name)
-    .bind(&req.description)
-    .bind(now)
-    .execute(&state.pool)
-    .await?;
+    let flag = Flag {
+        id: flag_id.clone(),
+        project_id: project.id.clone(),
+        key: req.key.clone(),
+        name: req.name.clone(),
+        description: req.description.clone(),
+        created_at: now,
+    };
+
+    state.storage.create_flag(&flag).await?;
 
     // Get all environments and create default flag values
-    let environments: Vec<Environment> = sqlx::query_as(
-        "SELECT id, project_id, name, api_key, created_at FROM environments WHERE project_id = ?",
-    )
-    .bind(&project.id)
-    .fetch_all(&state.pool)
-    .await?;
+    let environments = state.storage.list_environments_by_project(&project.id).await?;
 
     let mut env_values: HashMap<String, FlagEnvironmentValue> = HashMap::new();
 
     for env in &environments {
         let fv_id = Uuid::new_v4().to_string();
-        sqlx::query(
-            "INSERT INTO flag_values (id, flag_id, environment_id, enabled, rollout_percentage, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
-        )
-        .bind(&fv_id)
-        .bind(&flag_id)
-        .bind(&env.id)
-        .bind(false)
-        .bind(100)
-        .bind(now)
-        .execute(&state.pool)
-        .await?;
+        let flag_value = FlagValue {
+            id: fv_id,
+            flag_id: flag_id.clone(),
+            environment_id: env.id.clone(),
+            enabled: false,
+            rollout_percentage: 100,
+            updated_at: now,
+        };
+
+        state.storage.create_flag_value(&flag_value).await?;
 
         env_values.insert(
             env.name.clone(),
@@ -290,33 +241,24 @@ pub async fn update_flag_value(
     Json(req): Json<UpdateFlagValueRequest>,
 ) -> Result<Json<FlagEnvironmentValue>> {
     // Get the flag
-    let flag: Flag = sqlx::query_as(
-        "SELECT id, project_id, key, name, description, created_at FROM flags WHERE project_id = ? AND key = ?",
-    )
-    .bind(&project.id)
-    .bind(&key)
-    .fetch_optional(&state.pool)
-    .await?
-    .ok_or_else(|| AppError::NotFound(format!("Flag '{}' not found", key)))?;
+    let flag = state
+        .storage
+        .get_flag_by_key(&project.id, &key)
+        .await?
+        .ok_or_else(|| AppError::NotFound(format!("Flag '{}' not found", key)))?;
 
     // Get the environment
-    let environment: Environment = sqlx::query_as(
-        "SELECT id, project_id, name, api_key, created_at FROM environments WHERE project_id = ? AND name = ?",
-    )
-    .bind(&project.id)
-    .bind(&env_name)
-    .fetch_optional(&state.pool)
-    .await?
-    .ok_or_else(|| AppError::NotFound(format!("Environment '{}' not found", env_name)))?;
+    let environment = state
+        .storage
+        .get_environment_by_name(&project.id, &env_name)
+        .await?
+        .ok_or_else(|| AppError::NotFound(format!("Environment '{}' not found", env_name)))?;
 
     // Get or create flag value
-    let existing: Option<FlagValue> = sqlx::query_as(
-        "SELECT id, flag_id, environment_id, enabled, rollout_percentage, updated_at FROM flag_values WHERE flag_id = ? AND environment_id = ?",
-    )
-    .bind(&flag.id)
-    .bind(&environment.id)
-    .fetch_optional(&state.pool)
-    .await?;
+    let existing = state
+        .storage
+        .get_flag_value(&flag.id, &environment.id)
+        .await?;
 
     let now = Utc::now();
 
@@ -332,15 +274,16 @@ pub async fn update_flag_value(
                 ));
             }
 
-            sqlx::query(
-                "UPDATE flag_values SET enabled = ?, rollout_percentage = ?, updated_at = ? WHERE id = ?",
-            )
-            .bind(new_enabled)
-            .bind(new_rollout)
-            .bind(now)
-            .bind(&fv.id)
-            .execute(&state.pool)
-            .await?;
+            let updated_fv = FlagValue {
+                id: fv.id,
+                flag_id: flag.id,
+                environment_id: environment.id,
+                enabled: new_enabled,
+                rollout_percentage: new_rollout,
+                updated_at: now,
+            };
+
+            state.storage.update_flag_value(&updated_fv).await?;
 
             (new_enabled, new_rollout)
         }
@@ -355,17 +298,16 @@ pub async fn update_flag_value(
             }
 
             let fv_id = Uuid::new_v4().to_string();
-            sqlx::query(
-                "INSERT INTO flag_values (id, flag_id, environment_id, enabled, rollout_percentage, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
-            )
-            .bind(&fv_id)
-            .bind(&flag.id)
-            .bind(&environment.id)
-            .bind(enabled)
-            .bind(rollout)
-            .bind(now)
-            .execute(&state.pool)
-            .await?;
+            let flag_value = FlagValue {
+                id: fv_id,
+                flag_id: flag.id,
+                environment_id: environment.id,
+                enabled,
+                rollout_percentage: rollout,
+                updated_at: now,
+            };
+
+            state.storage.create_flag_value(&flag_value).await?;
 
             (enabled, rollout)
         }
@@ -385,61 +327,53 @@ pub async fn toggle_flag(
     Query(query): Query<ToggleFlagQuery>,
 ) -> Result<Json<FlagToggleResponse>> {
     // Get the flag
-    let flag: Flag = sqlx::query_as(
-        "SELECT id, project_id, key, name, description, created_at FROM flags WHERE project_id = ? AND key = ?",
-    )
-    .bind(&project.id)
-    .bind(&key)
-    .fetch_optional(&state.pool)
-    .await?
-    .ok_or_else(|| AppError::NotFound(format!("Flag '{}' not found", key)))?;
+    let flag = state
+        .storage
+        .get_flag_by_key(&project.id, &key)
+        .await?
+        .ok_or_else(|| AppError::NotFound(format!("Flag '{}' not found", key)))?;
 
     // Get the environment
-    let environment: Environment = sqlx::query_as(
-        "SELECT id, project_id, name, api_key, created_at FROM environments WHERE project_id = ? AND name = ?",
-    )
-    .bind(&project.id)
-    .bind(&query.environment)
-    .fetch_optional(&state.pool)
-    .await?
-    .ok_or_else(|| AppError::NotFound(format!("Environment '{}' not found", query.environment)))?;
+    let environment = state
+        .storage
+        .get_environment_by_name(&project.id, &query.environment)
+        .await?
+        .ok_or_else(|| AppError::NotFound(format!("Environment '{}' not found", query.environment)))?;
 
     let now = Utc::now();
 
     // Get current value and toggle
-    let existing: Option<FlagValue> = sqlx::query_as(
-        "SELECT id, flag_id, environment_id, enabled, rollout_percentage, updated_at FROM flag_values WHERE flag_id = ? AND environment_id = ?",
-    )
-    .bind(&flag.id)
-    .bind(&environment.id)
-    .fetch_optional(&state.pool)
-    .await?;
+    let existing = state
+        .storage
+        .get_flag_value(&flag.id, &environment.id)
+        .await?;
 
     let new_enabled = match existing {
         Some(fv) => {
             let toggled = !fv.enabled;
-            sqlx::query("UPDATE flag_values SET enabled = ?, updated_at = ? WHERE id = ?")
-                .bind(toggled)
-                .bind(now)
-                .bind(&fv.id)
-                .execute(&state.pool)
-                .await?;
+            let updated_fv = FlagValue {
+                id: fv.id,
+                flag_id: flag.id,
+                environment_id: environment.id,
+                enabled: toggled,
+                rollout_percentage: fv.rollout_percentage,
+                updated_at: now,
+            };
+            state.storage.update_flag_value(&updated_fv).await?;
             toggled
         }
         None => {
             // No value exists, create with enabled = true (toggle from default false)
             let fv_id = Uuid::new_v4().to_string();
-            sqlx::query(
-                "INSERT INTO flag_values (id, flag_id, environment_id, enabled, rollout_percentage, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
-            )
-            .bind(&fv_id)
-            .bind(&flag.id)
-            .bind(&environment.id)
-            .bind(true)
-            .bind(100)
-            .bind(now)
-            .execute(&state.pool)
-            .await?;
+            let flag_value = FlagValue {
+                id: fv_id,
+                flag_id: flag.id,
+                environment_id: environment.id,
+                enabled: true,
+                rollout_percentage: 100,
+                updated_at: now,
+            };
+            state.storage.create_flag_value(&flag_value).await?;
             true
         }
     };

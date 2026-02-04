@@ -72,13 +72,11 @@ impl FromRequestParts<AppState> for AuthUser {
 
         let claims = verify_jwt(token, &state.jwt_secret)?;
 
-        let user: User = sqlx::query_as(
-            "SELECT id, email, password_hash, created_at FROM users WHERE id = ?",
-        )
-        .bind(&claims.sub)
-        .fetch_optional(&state.pool)
-        .await?
-        .ok_or(AppError::Unauthorized)?;
+        let user = state
+            .storage
+            .get_user_by_id(&claims.sub)
+            .await?
+            .ok_or(AppError::Unauthorized)?;
 
         Ok(AuthUser(user))
     }
@@ -104,13 +102,11 @@ impl FromRequestParts<AppState> for AuthProject {
 
         // Check if it's a project API key
         if token.starts_with("ffl_proj_") {
-            let project: Project = sqlx::query_as(
-                "SELECT id, user_id, name, api_key, created_at FROM projects WHERE api_key = ?",
-            )
-            .bind(token)
-            .fetch_optional(&state.pool)
-            .await?
-            .ok_or(AppError::InvalidApiKey)?;
+            let project = state
+                .storage
+                .get_project_by_api_key(token)
+                .await?
+                .ok_or(AppError::InvalidApiKey)?;
 
             return Ok(AuthProject(project));
         }
@@ -118,13 +114,11 @@ impl FromRequestParts<AppState> for AuthProject {
         // Otherwise treat as JWT and get user's first project
         let claims = verify_jwt(token, &state.jwt_secret)?;
 
-        let project: Project = sqlx::query_as(
-            "SELECT id, user_id, name, api_key, created_at FROM projects WHERE user_id = ? LIMIT 1",
-        )
-        .bind(&claims.sub)
-        .fetch_optional(&state.pool)
-        .await?
-        .ok_or(AppError::NotFound("No project found".to_string()))?;
+        let project = state
+            .storage
+            .get_first_project_by_user(&claims.sub)
+            .await?
+            .ok_or(AppError::NotFound("No project found".to_string()))?;
 
         Ok(AuthProject(project))
     }
@@ -154,20 +148,17 @@ impl FromRequestParts<AppState> for AuthEnvironment {
             return Err(AppError::InvalidApiKey);
         }
 
-        let env: Environment = sqlx::query_as(
-            "SELECT id, project_id, name, api_key, created_at FROM environments WHERE api_key = ?",
-        )
-        .bind(token)
-        .fetch_optional(&state.pool)
-        .await?
-        .ok_or(AppError::InvalidApiKey)?;
+        let env = state
+            .storage
+            .get_environment_by_api_key(token)
+            .await?
+            .ok_or(AppError::InvalidApiKey)?;
 
-        let project: Project = sqlx::query_as(
-            "SELECT id, user_id, name, api_key, created_at FROM projects WHERE id = ?",
-        )
-        .bind(&env.project_id)
-        .fetch_one(&state.pool)
-        .await?;
+        let project = state
+            .storage
+            .get_project_by_id(&env.project_id)
+            .await?
+            .ok_or(AppError::Internal("Project not found for environment".to_string()))?;
 
         Ok(AuthEnvironment(env, project))
     }
@@ -195,32 +186,27 @@ impl FromRequestParts<AppState> for FlexAuth {
             .ok_or(AppError::Unauthorized)?;
 
         if token.starts_with("ffl_proj_") {
-            let project: Project = sqlx::query_as(
-                "SELECT id, user_id, name, api_key, created_at FROM projects WHERE api_key = ?",
-            )
-            .bind(token)
-            .fetch_optional(&state.pool)
-            .await?
-            .ok_or(AppError::InvalidApiKey)?;
+            let project = state
+                .storage
+                .get_project_by_api_key(token)
+                .await?
+                .ok_or(AppError::InvalidApiKey)?;
 
             return Ok(FlexAuth::Project(project));
         }
 
         if token.starts_with("ffl_env_") {
-            let env: Environment = sqlx::query_as(
-                "SELECT id, project_id, name, api_key, created_at FROM environments WHERE api_key = ?",
-            )
-            .bind(token)
-            .fetch_optional(&state.pool)
-            .await?
-            .ok_or(AppError::InvalidApiKey)?;
+            let env = state
+                .storage
+                .get_environment_by_api_key(token)
+                .await?
+                .ok_or(AppError::InvalidApiKey)?;
 
-            let project: Project = sqlx::query_as(
-                "SELECT id, user_id, name, api_key, created_at FROM projects WHERE id = ?",
-            )
-            .bind(&env.project_id)
-            .fetch_one(&state.pool)
-            .await?;
+            let project = state
+                .storage
+                .get_project_by_id(&env.project_id)
+                .await?
+                .ok_or(AppError::Internal("Project not found for environment".to_string()))?;
 
             return Ok(FlexAuth::Environment(env, project));
         }
@@ -228,13 +214,11 @@ impl FromRequestParts<AppState> for FlexAuth {
         // JWT auth
         let claims = verify_jwt(token, &state.jwt_secret)?;
 
-        let project: Project = sqlx::query_as(
-            "SELECT id, user_id, name, api_key, created_at FROM projects WHERE user_id = ? LIMIT 1",
-        )
-        .bind(&claims.sub)
-        .fetch_optional(&state.pool)
-        .await?
-        .ok_or(AppError::NotFound("No project found".to_string()))?;
+        let project = state
+            .storage
+            .get_first_project_by_user(&claims.sub)
+            .await?
+            .ok_or(AppError::NotFound("No project found".to_string()))?;
 
         Ok(FlexAuth::Project(project))
     }
