@@ -33,6 +33,35 @@ That's it. SQLite database created automatically.
 
 ---
 
+## Quick Start (Docker Compose)
+
+For a production-like setup with PostgreSQL:
+
+```bash
+# Clone the repo (or just grab docker-compose.yml)
+git clone https://github.com/faiscadev/flaglite.git
+cd flaglite
+
+# (Optional) Customize settings
+cp .env.example .env
+# Edit .env to set JWT_SECRET and POSTGRES_PASSWORD
+
+# Start everything
+docker compose up -d
+
+# Server running at http://localhost:8080
+```
+
+**For production**, make sure to:
+1. Set a strong `JWT_SECRET` (generate with: `openssl rand -hex 32`)
+2. Change `POSTGRES_PASSWORD` to something secure
+3. Add a reverse proxy (nginx, traefik) for TLS
+
+To stop: `docker compose down`  
+To reset database: `docker compose down -v`
+
+---
+
 ## Quick Start (Hosted)
 
 Don't want to self-host? Use FlagLite Cloud.

@@ -1,0 +1,84 @@
+# FlagLite Docker Compose
+# 
+# Quick start:
+#   cp .env.example .env  # (optional: customize settings)
+#   docker compose up -d
+#
+# The API will be available at http://localhost:8080
+#
+# For production, make sure to:
+#   1. Set a strong JWT_SECRET (generate with: openssl rand -hex 32)
+#   2. Change POSTGRES_PASSWORD to something secure
+#   3. Consider adding a reverse proxy (nginx, traefik) for TLS
+
+services:
+  # ============================================
+  # PostgreSQL Database
+  # ============================================
+  # Production-grade storage for feature flags.
+  # Data persists in the flaglite_postgres_data volume.
+  postgres:
+    image: postgres:16-alpine
+    container_name: flaglite-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-flaglite}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-flaglite_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-flaglite}
+    volumes:
+      # Persist database data
+      - flaglite_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-flaglite} -d ${POSTGRES_DB:-flaglite}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    # Not exposed externally by default — only accessible within the network
+    # Uncomment below to expose for debugging:
+    # ports:
+    #   - "5432:5432"
+
+  # ============================================
+  # FlagLite API Server
+  # ============================================
+  # The main feature flag service.
+  # Connects to PostgreSQL and exposes the REST API.
+  api:
+    image: ghcr.io/faiscadev/flaglite:0.1.0
+    container_name: flaglite-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database connection (uses Docker internal DNS)
+      DATABASE_URL: postgres://${POSTGRES_USER:-flaglite}:${POSTGRES_PASSWORD:-flaglite_dev_password}@postgres:5432/${POSTGRES_DB:-flaglite}
+      
+      # JWT secret for API authentication
+      # IMPORTANT: Change this in production! Generate with: openssl rand -hex 32
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_me_in_production}
+      
+      # Logging level (debug, info, warn, error)
+      RUST_LOG: ${RUST_LOG:-info}
+      
+      # Optional: Set to "true" to run database migrations on startup
+      # RUN_MIGRATIONS: "true"
+    ports:
+      # Expose API on host port 8080
+      - "${FLAGLITE_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+# ============================================
+# Volumes
+# ============================================
+# Named volume for PostgreSQL data persistence.
+# Data survives container restarts and removals.
+# To reset: docker-compose down -v
+volumes:
+  flaglite_postgres_data:
+    name: flaglite_postgres_data
