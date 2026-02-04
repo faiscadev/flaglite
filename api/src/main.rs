@@ -1,9 +1,9 @@
 mod config;
-mod db;
 mod error;
 mod handlers;
 mod models;
 mod auth;
+mod storage;
 
 use axum::{
     routing::{get, patch, post},
@@ -58,13 +58,13 @@ async fn main() -> anyhow::Result<()> {
 
     match cli.command {
         Commands::Serve { port, host } => {
-            let pool = db::create_pool(&config.database_url).await?;
+            let storage = storage::create_storage(&config.database_url).await?;
             
             // Run migrations on startup
-            db::run_migrations(&pool).await?;
+            storage.run_migrations().await?;
             
             let app_state = models::AppState {
-                pool,
+                storage,
                 jwt_secret: config.jwt_secret,
             };
 
@@ -77,8 +77,8 @@ async fn main() -> anyhow::Result<()> {
             axum::serve(listener, app).await?;
         }
         Commands::Migrate => {
-            let pool = db::create_pool(&config.database_url).await?;
-            db::run_migrations(&pool).await?;
+            let storage = storage::create_storage(&config.database_url).await?;
+            storage.run_migrations().await?;
             tracing::info!("✅ Migrations completed successfully");
         }
     }
