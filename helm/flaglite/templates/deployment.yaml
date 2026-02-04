@@ -1,6 +1,6 @@
 {{- /* Validate: SQLite cannot be used with multiple replicas due to ReadWriteOnce PVC */ -}}
-{{- if and (eq .Values.database.type "sqlite") (not .Values.postgresql.enabled) (gt (int .Values.replicaCount) 1) }}
-{{- fail "ERROR: SQLite with replicaCount > 1 is not supported. The PVC uses ReadWriteOnce access mode which cannot be mounted by multiple pods. Either set replicaCount: 1, or enable postgresql.enabled: true for high availability." }}
+{{- if and (eq .Values.database.type "sqlite") (not .Values.postgresql.enabled) (not .Values.externalDatabase.enabled) (gt (int .Values.replicaCount) 1) }}
+{{- fail "ERROR: SQLite with replicaCount > 1 is not supported. The PVC uses ReadWriteOnce access mode which cannot be mounted by multiple pods. Either set replicaCount: 1, enable postgresql.enabled: true, or use externalDatabase.enabled: true for high availability." }}
 {{- end }}
 apiVersion: apps/v1
 kind: Deployment
@@ -43,7 +43,18 @@ spec:
           env:
             - name: RUST_LOG
               value: {{ .Values.logging.level | quote }}
-            {{- if .Values.postgresql.enabled }}
+            {{- if .Values.externalDatabase.enabled }}
+            {{- /* External database (CNPG, RDS, etc.) - takes precedence over all other options */}}
+            - name: DATABASE_URL
+              {{- if .Values.externalDatabase.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.externalDatabase.existingSecret }}
+                  key: {{ .Values.externalDatabase.urlKey | default "database-url" }}
+              {{- else }}
+              value: {{ .Values.externalDatabase.url | quote }}
+              {{- end }}
+            {{- else if .Values.postgresql.enabled }}
             {{- /* PostgreSQL subchart enabled - auto-configure connection */}}
             {{- /* POSTGRES_PASSWORD must come BEFORE DATABASE_URL for $(POSTGRES_PASSWORD) substitution to work */}}
             - name: POSTGRES_PASSWORD

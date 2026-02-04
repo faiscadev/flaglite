@@ -87,6 +87,19 @@ database:
     usernameKey: username
     passwordKey: password
 
+# External database configuration
+# Use this to connect to an existing PostgreSQL instance (e.g., CNPG, RDS, etc.)
+# When set, this takes precedence over database.postgres and postgresql subchart.
+externalDatabase:
+  # Enable external database (overrides database.type and postgresql.enabled)
+  enabled: false
+  # Full PostgreSQL connection URL
+  # Example: postgresql://user:password@host:5432/dbname?sslmode=require
+  url: ""
+  # Or use a secret containing the URL
+  existingSecret: ""
+  urlKey: database-url
+
 # PostgreSQL subchart (optional - enable for bundled Postgres)
 # When enabled, database.type is automatically set to "postgres"
 # and connection is configured to use the subchart.
