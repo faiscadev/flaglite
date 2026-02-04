@@ -17,48 +17,63 @@
 
 ---
 
-## Quick Start (Self-Hosted)
+## Getting Started
 
-```bash
-# Install
-curl -fsSL https://flaglite.dev/install.sh | sh
+Choose your deployment method:
 
-# Start the server
-./flaglite serve
+| Method | Best For | Time |
+|--------|----------|------|
+| [Docker Compose](#quick-start-docker-compose) | Production, easy setup | 5 min |
+| [Single Binary](#quick-start-single-binary) | VMs, bare metal | 2 min |
+| [Kubernetes](docs/self-hosting.md#option-2-kubernetes-with-helm) | K8s clusters | 10 min |
 
-# Server running at http://localhost:8080
-```
-
-That's it. SQLite database created automatically.
+📖 **Full guide:** [Self-Hosting Documentation](docs/self-hosting.md)
 
 ---
 
 ## Quick Start (Docker Compose)
 
-For a production-like setup with PostgreSQL:
+The fastest path to production with PostgreSQL:
 
 ```bash
-# Clone the repo (or just grab docker-compose.yml)
+# Clone and enter
 git clone https://github.com/faiscadev/flaglite.git
 cd flaglite
 
-# (Optional) Customize settings
+# Configure (generate secure JWT secret)
 cp .env.example .env
-# Edit .env to set JWT_SECRET and POSTGRES_PASSWORD
+sed -i.bak "s/JWT_SECRET=.*/JWT_SECRET=$(openssl rand -hex 32)/" .env
 
-# Start everything
+# Start
 docker compose up -d
+
+# Verify
+curl http://localhost:8080/health
+# {"status":"ok"}
+```
+
+**For production**, also update `POSTGRES_PASSWORD` in `.env`.
+
+📖 [Full Docker Compose guide](docs/self-hosting.md#option-1-docker-compose-recommended)
+
+---
+
+## Quick Start (Single Binary)
+
+Zero dependencies, instant setup:
+
+```bash
+# Install
+curl -fsSL https://flaglite.dev/install.sh | sh
+
+# Configure and run
+export JWT_SECRET=$(openssl rand -hex 32)
+./flaglite serve
 
 # Server running at http://localhost:8080
 ```
 
-**For production**, make sure to:
-1. Set a strong `JWT_SECRET` (generate with: `openssl rand -hex 32`)
-2. Change `POSTGRES_PASSWORD` to something secure
-3. Add a reverse proxy (nginx, traefik) for TLS
-
-To stop: `docker compose down`  
-To reset database: `docker compose down -v`
+📖 [Full binary setup guide](docs/self-hosting.md#option-4-single-binary)
 
 ---
 
@@ -127,9 +142,10 @@ Full CLI reference: [docs.flaglite.dev/cli](https://docs.flaglite.dev/cli)
 
 ## Documentation
 
-- [Getting Started](https://docs.flaglite.dev/getting-started)
-- [API Reference](https://docs.flaglite.dev/api)
-- [Self-Hosting Guide](https://docs.flaglite.dev/self-hosting)
+- **[Self-Hosting Guide](docs/self-hosting.md)** — Deploy FlagLite (Docker, Kubernetes, binary)
+- **[Configuration Reference](docs/configuration.md)** — Environment variables, Helm values, database setup
+- **[API Reference](https://docs.flaglite.dev/api)** — REST API documentation
+- **[CLI Reference](https://docs.flaglite.dev/cli)** — Command-line interface
 
 ---
 
