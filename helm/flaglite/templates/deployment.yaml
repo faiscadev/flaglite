@@ -41,13 +41,14 @@ spec:
               value: {{ .Values.logging.level | quote }}
             {{- if .Values.postgresql.enabled }}
             {{- /* PostgreSQL subchart enabled - auto-configure connection */}}
-            - name: DATABASE_URL
-              value: "postgresql://{{ .Values.postgresql.auth.username }}:$(POSTGRES_PASSWORD)@{{ include "flaglite.fullname" . }}-postgresql:5432/{{ .Values.postgresql.auth.database }}?sslmode=disable"
+            {{- /* POSTGRES_PASSWORD must come BEFORE DATABASE_URL for $(POSTGRES_PASSWORD) substitution to work */}}
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "flaglite.fullname" . }}-postgresql
                   key: password
+            - name: DATABASE_URL
+              value: "postgresql://{{ .Values.postgresql.auth.username }}:$(POSTGRES_PASSWORD)@{{ include "flaglite.fullname" . }}-postgresql:5432/{{ .Values.postgresql.auth.database }}?sslmode=disable"
             {{- else if eq .Values.database.type "sqlite" }}
             - name: DATABASE_URL
               value: "sqlite:{{ .Values.database.sqlitePath }}"
