@@ -1,0 +1,161 @@
+{{- if .Values.postgresql.enabled }}
+{{- if .Values.backup.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "flaglite.fullname" . }}-backup
+  labels:
+    {{- include "flaglite.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
+spec:
+  schedule: {{ .Values.backup.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.backup.successfulJobsHistoryLimit | default 3 }}
+  failedJobsHistoryLimit: {{ .Values.backup.failedJobsHistoryLimit | default 1 }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            {{- include "flaglite.selectorLabels" . | nindent 12 }}
+            app.kubernetes.io/component: backup
+        spec:
+          restartPolicy: OnFailure
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+          containers:
+            - name: backup
+              image: {{ .Values.backup.image.repository }}:{{ .Values.backup.image.tag }}
+              imagePullPolicy: {{ .Values.backup.image.pullPolicy | default "IfNotPresent" }}
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+              env:
+                - name: PGHOST
+                  value: {{ include "flaglite.fullname" . }}-postgresql
+                - name: PGPORT
+                  value: "5432"
+                - name: PGUSER
+                  value: {{ .Values.postgresql.auth.username | quote }}
+                - name: PGDATABASE
+                  value: {{ .Values.postgresql.auth.database | quote }}
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ include "flaglite.fullname" . }}-postgresql
+                      key: password
+                - name: BACKUP_DIR
+                  value: /backups
+                {{- if .Values.backup.s3.enabled }}
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.backup.s3.existingSecret | default (printf "%s-backup-s3" (include "flaglite.fullname" .)) }}
+                      key: {{ .Values.backup.s3.accessKeyIdKey | default "access-key-id" }}
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.backup.s3.existingSecret | default (printf "%s-backup-s3" (include "flaglite.fullname" .)) }}
+                      key: {{ .Values.backup.s3.secretAccessKeyKey | default "secret-access-key" }}
+                - name: S3_BUCKET
+                  value: {{ .Values.backup.s3.bucket | quote }}
+                - name: S3_ENDPOINT
+                  value: {{ .Values.backup.s3.endpoint | quote }}
+                - name: S3_REGION
+                  value: {{ .Values.backup.s3.region | default "us-east-1" | quote }}
+                {{- end }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+                  BACKUP_FILE="${BACKUP_DIR}/flaglite-${TIMESTAMP}.sql.gz"
+                  
+                  echo "Starting backup at ${TIMESTAMP}..."
+                  pg_dump --no-password --clean --if-exists | gzip > "${BACKUP_FILE}"
+                  echo "Backup created: ${BACKUP_FILE}"
+                  
+                  {{- if .Values.backup.s3.enabled }}
+                  # Upload to S3-compatible storage
+                  S3_PATH="s3://${S3_BUCKET}/flaglite/flaglite-${TIMESTAMP}.sql.gz"
+                  echo "Uploading to ${S3_PATH}..."
+                  
+                  # Use aws cli or s3cmd depending on what's available
+                  if command -v aws &> /dev/null; then
+                    aws s3 cp "${BACKUP_FILE}" "${S3_PATH}" \
+                      {{- if .Values.backup.s3.endpoint }}
+                      --endpoint-url "${S3_ENDPOINT}" \
+                      {{- end }}
+                      --region "${S3_REGION}"
+                  else
+                    echo "ERROR: aws cli not found in image"
+                    exit 1
+                  fi
+                  
+                  echo "Upload complete!"
+                  
+                  # Clean up local backup after S3 upload
+                  rm -f "${BACKUP_FILE}"
+                  {{- end }}
+                  
+                  # Prune old local backups (keep last N)
+                  {{- if not .Values.backup.s3.enabled }}
+                  cd "${BACKUP_DIR}"
+                  ls -t flaglite-*.sql.gz 2>/dev/null | tail -n +{{ add1 (.Values.backup.retention | default 7) }} | xargs -r rm -f
+                  echo "Old backups pruned. Keeping {{ .Values.backup.retention | default 7 }} most recent."
+                  {{- end }}
+                  
+                  echo "Backup job completed successfully!"
+              resources:
+                {{- toYaml .Values.backup.resources | nindent 16 }}
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backups
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: backup-storage
+              {{- if .Values.backup.persistence.enabled }}
+              persistentVolumeClaim:
+                claimName: {{ .Values.backup.persistence.existingClaim | default (printf "%s-backup" (include "flaglite.fullname" .)) }}
+              {{- else }}
+              emptyDir: {}
+              {{- end }}
+            - name: tmp
+              emptyDir: {}
+          {{- with .Values.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+---
+{{- if and .Values.backup.persistence.enabled (not .Values.backup.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "flaglite.fullname" . }}-backup
+  labels:
+    {{- include "flaglite.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backup
+spec:
+  accessModes:
+    - {{ .Values.backup.persistence.accessMode | default "ReadWriteOnce" }}
+  {{- if .Values.backup.persistence.storageClass }}
+  storageClassName: {{ .Values.backup.persistence.storageClass | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.backup.persistence.size | default "5Gi" }}
+{{- end }}
+{{- end }}
+{{- end }}

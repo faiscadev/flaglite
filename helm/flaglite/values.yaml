@@ -1,10 +1,14 @@
 # Default values for FlagLite
 
-replicaCount: 2
+# Number of replicas
+# NOTE: If using SQLite (database.type: sqlite), you MUST use replicaCount: 1
+# because the PVC uses ReadWriteOnce and cannot be mounted by multiple pods.
+# For high availability, enable postgresql.enabled: true instead.
+replicaCount: 1
 
 image:
   repository: ghcr.io/faiscadev/flaglite
-  tag: latest
+  tag: "0.1.0"
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -68,6 +72,8 @@ persistence:
 # Database configuration
 database:
   # "sqlite" or "postgres"
+  # WARNING: SQLite only supports replicaCount: 1 (ReadWriteOnce PVC limitation)
+  # For production/HA deployments, use PostgreSQL instead.
   type: sqlite
   # For SQLite (default)
   sqlitePath: /data/flaglite.db
@@ -83,7 +89,8 @@ database:
 
 # PostgreSQL subchart (optional - enable for bundled Postgres)
 # When enabled, database.type is automatically set to "postgres"
-# and connection is configured to use the subchart
+# and connection is configured to use the subchart.
+# Recommended for production and multi-replica deployments.
 postgresql:
   enabled: false
   # Auth configuration
@@ -138,3 +145,45 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+# PostgreSQL backup configuration (only used when postgresql.enabled: true)
+backup:
+  enabled: false
+  # Cron schedule (default: daily at 2am)
+  schedule: "0 2 * * *"
+  # Number of local backups to retain
+  retention: 7
+  # Job history limits
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  # Backup container image (needs pg_dump and optionally aws cli)
+  image:
+    repository: postgres
+    tag: "16-alpine"
+    pullPolicy: IfNotPresent
+  # Resources for backup job
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+  # Persistence for local backups (not needed if using S3)
+  persistence:
+    enabled: false
+    existingClaim: ""
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    size: 5Gi
+  # S3-compatible storage (MinIO, AWS S3, etc.)
+  s3:
+    enabled: false
+    bucket: ""
+    # Leave empty for AWS S3, or set for MinIO/other S3-compatible
+    endpoint: ""
+    region: "us-east-1"
+    # Secret containing access-key-id and secret-access-key
+    existingSecret: ""
+    accessKeyIdKey: access-key-id
+    secretAccessKeyKey: secret-access-key

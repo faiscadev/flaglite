@@ -1,3 +1,7 @@
+{{- /* Validate: SQLite cannot be used with multiple replicas due to ReadWriteOnce PVC */ -}}
+{{- if and (eq .Values.database.type "sqlite") (not .Values.postgresql.enabled) (gt (int .Values.replicaCount) 1) }}
+{{- fail "ERROR: SQLite with replicaCount > 1 is not supported. The PVC uses ReadWriteOnce access mode which cannot be mounted by multiple pods. Either set replicaCount: 1, or enable postgresql.enabled: true for high availability." }}
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
