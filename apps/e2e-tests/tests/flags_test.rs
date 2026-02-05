@@ -108,39 +108,20 @@ async fn test_toggle_flag() {
     user.flags_create(&flag_key, Some("Toggle Test Flag"), None, false)
         .expect("flags create failed");
 
-    // Debug: check raw CLI output for get
-    let raw_get = user.exec(&["flags", "get", &flag_key]);
-    eprintln!("DEBUG: flags get stdout:\n{}", raw_get.stdout());
-    eprintln!("DEBUG: flags get stderr:\n{}", raw_get.stderr());
-
     // Get initial state
     let initial = user.flags_get(&flag_key).expect("flags get failed");
     let initial_enabled = initial.enabled;
-    eprintln!("DEBUG: initial_enabled = {initial_enabled}");
 
     // Toggle the flag
-    let raw_toggle = user.exec(&["flags", "toggle", &flag_key]);
-    eprintln!("DEBUG: flags toggle stdout:\n{}", raw_toggle.stdout());
-    eprintln!("DEBUG: flags toggle stderr:\n{}", raw_toggle.stderr());
-
     let toggle_result = user.flags_toggle(&flag_key);
     assert!(
         toggle_result.is_ok(),
         "flags toggle failed: {:?}",
         toggle_result.err()
     );
-    eprintln!("DEBUG: toggle returned = {toggle_result:?}");
-
-    // Debug: check raw CLI output for get after toggle
-    let raw_get_after = user.exec(&["flags", "get", &flag_key]);
-    eprintln!(
-        "DEBUG: flags get after toggle stdout:\n{}",
-        raw_get_after.stdout()
-    );
 
     // Get new state
     let after_toggle = user.flags_get(&flag_key).expect("flags get failed");
-    eprintln!("DEBUG: after_toggle.enabled = {}", after_toggle.enabled);
 
     assert_ne!(
         after_toggle.enabled, initial_enabled,
