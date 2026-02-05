@@ -23,7 +23,7 @@ impl FromStr for OutputFormat {
         match s.to_lowercase().as_str() {
             "pretty" | "table" => Ok(OutputFormat::Pretty),
             "json" => Ok(OutputFormat::Json),
-            _ => Err(format!("Unknown format: {}. Use 'pretty' or 'json'.", s)),
+            _ => Err(format!("Unknown format: {s}. Use 'pretty' or 'json'.")),
         }
     }
 }
@@ -359,7 +359,7 @@ impl Output {
         println!(
             "  {} {}",
             "Project:".dimmed(),
-            config.project_id.as_deref().unwrap_or("-").to_string()
+            config.project_id.as_deref().unwrap_or("-")
         );
         println!(
             "  {} {}",

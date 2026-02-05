@@ -1,9 +1,8 @@
 //! FlagLite API client
 
 use flaglite_core::{
-    ApiErrorResponse, AuthResponse, CreateFlagRequest, CreateProjectRequest, Environment,
-    Flag, FlagLiteError, FlagWithState, PaginatedResponse, Project, SignupRequest,
-    SignupResponse, User,
+    ApiErrorResponse, AuthResponse, CreateFlagRequest, CreateProjectRequest, Environment, Flag,
+    FlagLiteError, FlagWithState, PaginatedResponse, Project, SignupRequest, SignupResponse, User,
 };
 use reqwest::{Client, StatusCode};
 
@@ -46,11 +45,11 @@ impl FlagLiteClient {
     fn auth_header(&self) -> Result<String, FlagLiteError> {
         // Prefer API key over token
         if let Some(key) = &self.api_key {
-            return Ok(format!("Bearer {}", key));
+            return Ok(format!("Bearer {key}"));
         }
         self.token
             .as_ref()
-            .map(|t| format!("Bearer {}", t))
+            .map(|t| format!("Bearer {t}"))
             .ok_or(FlagLiteError::NotAuthenticated)
     }
 
@@ -112,7 +111,11 @@ impl FlagLiteClient {
     }
 
     /// Login with username and password
-    pub async fn login(&self, username: &str, password: &str) -> Result<AuthResponse, FlagLiteError> {
+    pub async fn login(
+        &self,
+        username: &str,
+        password: &str,
+    ) -> Result<AuthResponse, FlagLiteError> {
         let url = format!("{}/v1/auth/login", self.base_url);
         let req = flaglite_core::LoginRequest {
             username: username.to_string(),
@@ -200,7 +203,10 @@ impl FlagLiteClient {
     }
 
     /// Create a new project
-    pub async fn create_project(&self, req: CreateProjectRequest) -> Result<Project, FlagLiteError> {
+    pub async fn create_project(
+        &self,
+        req: CreateProjectRequest,
+    ) -> Result<Project, FlagLiteError> {
         let url = format!("{}/v1/projects", self.base_url);
         let auth = self.auth_header()?;
 
@@ -271,7 +277,7 @@ impl FlagLiteClient {
     ) -> Result<Vec<FlagWithState>, FlagLiteError> {
         let mut url = format!("{}/v1/projects/{}/flags", self.base_url, project_id);
         if let Some(env) = environment {
-            url = format!("{}?environment={}", url, env);
+            url = format!("{url}?environment={env}");
         }
         let auth = self.auth_header()?;
 
@@ -309,7 +315,7 @@ impl FlagLiteClient {
     ) -> Result<FlagWithState, FlagLiteError> {
         let mut url = format!("{}/v1/projects/{}/flags/{}", self.base_url, project_id, key);
         if let Some(env) = environment {
-            url = format!("{}?environment={}", url, env);
+            url = format!("{url}?environment={env}");
         }
         let auth = self.auth_header()?;
 

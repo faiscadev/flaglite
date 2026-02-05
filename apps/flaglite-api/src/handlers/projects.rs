@@ -48,10 +48,14 @@ pub async fn create_project(
     // Validate project name
     let name = req.name.trim();
     if name.is_empty() {
-        return Err(AppError::BadRequest("Project name cannot be empty".to_string()));
+        return Err(AppError::BadRequest(
+            "Project name cannot be empty".to_string(),
+        ));
     }
     if name.len() > 255 {
-        return Err(AppError::BadRequest("Project name must be at most 255 characters".to_string()));
+        return Err(AppError::BadRequest(
+            "Project name must be at most 255 characters".to_string(),
+        ));
     }
 
     let now = Utc::now();
@@ -110,7 +114,10 @@ pub async fn list_environments(
         return Err(AppError::NotFound("Project not found".to_string()));
     }
 
-    let environments = state.storage.list_environments_by_project(&project_id).await?;
+    let environments = state
+        .storage
+        .list_environments_by_project(&project_id)
+        .await?;
     let responses: Vec<EnvironmentResponse> = environments.into_iter().map(|e| e.into()).collect();
     Ok(Json(responses))
 }

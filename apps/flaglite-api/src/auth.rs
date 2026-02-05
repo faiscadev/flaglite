@@ -1,5 +1,5 @@
 use crate::error::{AppError, Result};
-use crate::models::{AppState, Claims, Environment, Project, User, is_user_api_key};
+use crate::models::{is_user_api_key, AppState, Claims, Environment, Project, User};
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
     Argon2,
@@ -9,9 +9,9 @@ use axum::{
     extract::FromRequestParts,
     http::{header::AUTHORIZATION, request::Parts},
 };
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use chrono::Utc;
-use sha2::{Sha256, Digest};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use sha2::{Digest, Sha256};
 
 const JWT_EXPIRY_DAYS: i64 = 7;
 
@@ -49,18 +49,18 @@ pub fn verify_jwt(token: &str, secret: &str) -> Result<Claims> {
 pub fn hash_password(password: &str) -> Result<String> {
     let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();
-    
+
     argon2
         .hash_password(password.as_bytes(), &salt)
         .map(|hash| hash.to_string())
-        .map_err(|e| AppError::Internal(format!("Password hash error: {}", e)))
+        .map_err(|e| AppError::Internal(format!("Password hash error: {e}")))
 }
 
 /// Verify a password against an Argon2 hash
 pub fn verify_password(password: &str, hash: &str) -> Result<bool> {
     let parsed_hash = PasswordHash::new(hash)
-        .map_err(|e| AppError::Internal(format!("Invalid password hash: {}", e)))?;
-    
+        .map_err(|e| AppError::Internal(format!("Invalid password hash: {e}")))?;
+
     Ok(Argon2::default()
         .verify_password(password.as_bytes(), &parsed_hash)
         .is_ok())
@@ -218,7 +218,9 @@ impl FromRequestParts<AppState> for AuthEnvironment {
             .storage
             .get_project_by_id(&env.project_id)
             .await?
-            .ok_or(AppError::Internal("Project not found for environment".to_string()))?;
+            .ok_or(AppError::Internal(
+                "Project not found for environment".to_string(),
+            ))?;
 
         Ok(AuthEnvironment(env, project))
     }
@@ -266,7 +268,9 @@ impl FromRequestParts<AppState> for FlexAuth {
                 .storage
                 .get_project_by_id(&env.project_id)
                 .await?
-                .ok_or(AppError::Internal("Project not found for environment".to_string()))?;
+                .ok_or(AppError::Internal(
+                    "Project not found for environment".to_string(),
+                ))?;
 
             return Ok(FlexAuth::Environment(env, project));
         }

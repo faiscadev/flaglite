@@ -72,8 +72,7 @@ pub async fn use_project(config: &mut Config, output: &Output, project: String) 
         }
         None => {
             return Err(anyhow::anyhow!(
-                "Project '{}' not found. Run 'flaglite projects list' to see available projects.",
-                project
+                "Project '{project}' not found. Run 'flaglite projects list' to see available projects.",
             ));
         }
     }

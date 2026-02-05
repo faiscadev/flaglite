@@ -3,9 +3,9 @@ use chrono::Utc;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 
+use super::Storage;
 use crate::error::Result;
 use crate::models::{ApiKey, Environment, Flag, FlagValue, Project, User};
-use super::Storage;
 
 pub struct PostgresStorage {
     pool: PgPool,
@@ -62,24 +62,20 @@ impl Storage for PostgresStorage {
     }
 
     async fn update_user(&self, user: &User) -> Result<()> {
-        sqlx::query(
-            "UPDATE users SET email = $1, updated_at = $2 WHERE id = $3",
-        )
-        .bind(&user.email)
-        .bind(user.updated_at)
-        .bind(&user.id)
-        .execute(&self.pool)
-        .await?;
+        sqlx::query("UPDATE users SET email = $1, updated_at = $2 WHERE id = $3")
+            .bind(&user.email)
+            .bind(user.updated_at)
+            .bind(&user.id)
+            .execute(&self.pool)
+            .await?;
         Ok(())
     }
 
     async fn username_exists(&self, username: &str) -> Result<bool> {
-        let result: (i64,) = sqlx::query_as(
-            "SELECT COUNT(*) FROM users WHERE username = $1",
-        )
-        .bind(username)
-        .fetch_one(&self.pool)
-        .await?;
+        let result: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM users WHERE username = $1")
+            .bind(username)
+            .fetch_one(&self.pool)
+            .await?;
         Ok(result.0 > 0)
     }
 
@@ -122,13 +118,11 @@ impl Storage for PostgresStorage {
     }
 
     async fn revoke_api_key(&self, id: &str) -> Result<()> {
-        sqlx::query(
-            "UPDATE api_keys SET revoked_at = $1 WHERE id = $2",
-        )
-        .bind(Utc::now())
-        .bind(id)
-        .execute(&self.pool)
-        .await?;
+        sqlx::query("UPDATE api_keys SET revoked_at = $1 WHERE id = $2")
+            .bind(Utc::now())
+            .bind(id)
+            .execute(&self.pool)
+            .await?;
         Ok(())
     }
 
@@ -224,7 +218,11 @@ impl Storage for PostgresStorage {
         Ok(env)
     }
 
-    async fn get_environment_by_name(&self, project_id: &str, name: &str) -> Result<Option<Environment>> {
+    async fn get_environment_by_name(
+        &self,
+        project_id: &str,
+        name: &str,
+    ) -> Result<Option<Environment>> {
         let env = sqlx::query_as(
             "SELECT id, project_id, name, api_key, created_at FROM environments WHERE project_id = $1 AND name = $2",
         )
@@ -310,7 +308,11 @@ impl Storage for PostgresStorage {
         Ok(())
     }
 
-    async fn get_flag_value(&self, flag_id: &str, environment_id: &str) -> Result<Option<FlagValue>> {
+    async fn get_flag_value(
+        &self,
+        flag_id: &str,
+        environment_id: &str,
+    ) -> Result<Option<FlagValue>> {
         let fv = sqlx::query_as(
             "SELECT id, flag_id, environment_id, enabled, rollout_percentage, updated_at FROM flag_values WHERE flag_id = $1 AND environment_id = $2",
         )
@@ -494,9 +496,11 @@ impl Storage for PostgresStorage {
         sqlx::query("CREATE INDEX IF NOT EXISTS idx_projects_api_key ON projects(api_key)")
             .execute(&self.pool)
             .await?;
-        sqlx::query("CREATE INDEX IF NOT EXISTS idx_environments_project ON environments(project_id)")
-            .execute(&self.pool)
-            .await?;
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_environments_project ON environments(project_id)",
+        )
+        .execute(&self.pool)
+        .await?;
         sqlx::query("CREATE INDEX IF NOT EXISTS idx_environments_api_key ON environments(api_key)")
             .execute(&self.pool)
             .await?;

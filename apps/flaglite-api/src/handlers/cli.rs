@@ -12,8 +12,7 @@ use uuid::Uuid;
 use crate::auth::AuthUser;
 use crate::error::{AppError, Result};
 use crate::models::{
-    generate_env_api_key, generate_project_api_key, AppState, Environment, Flag, FlagValue,
-    Project,
+    generate_env_api_key, generate_project_api_key, AppState, Environment, Flag, FlagValue, Project,
 };
 
 const DEFAULT_ENVIRONMENTS: [&str; 3] = ["development", "staging", "production"];
@@ -119,6 +118,7 @@ pub struct CliFlagWithState {
 
 /// Request to create a project
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct CreateProjectRequest {
     pub name: String,
     pub description: Option<String>,
@@ -126,6 +126,7 @@ pub struct CreateProjectRequest {
 
 /// Request to create a flag
 #[derive(Debug, Deserialize)]
+#[allow(dead_code)]
 pub struct CreateFlagRequest {
     pub key: String,
     pub name: String,
@@ -388,7 +389,7 @@ pub async fn get_flag(
         .storage
         .get_flag_by_key(&project_id, &key)
         .await?
-        .ok_or_else(|| AppError::NotFound(format!("Flag '{}' not found", key)))?;
+        .ok_or_else(|| AppError::NotFound(format!("Flag '{key}' not found")))?;
 
     // Get environment for state lookup
     let env_name = query.environment.as_deref().unwrap_or("production");
@@ -437,7 +438,7 @@ pub async fn toggle_flag(
         .storage
         .get_flag_by_key(&project_id, &key)
         .await?
-        .ok_or_else(|| AppError::NotFound(format!("Flag '{}' not found", key)))?;
+        .ok_or_else(|| AppError::NotFound(format!("Flag '{key}' not found")))?;
 
     let env_name = query
         .environment
@@ -447,7 +448,7 @@ pub async fn toggle_flag(
         .storage
         .get_environment_by_name(&project_id, &env_name)
         .await?
-        .ok_or_else(|| AppError::NotFound(format!("Environment '{}' not found", env_name)))?;
+        .ok_or_else(|| AppError::NotFound(format!("Environment '{env_name}' not found")))?;
 
     let now = Utc::now();
 
@@ -514,7 +515,7 @@ pub async fn delete_flag(
         .storage
         .get_flag_by_key(&project_id, &key)
         .await?
-        .ok_or_else(|| AppError::NotFound(format!("Flag '{}' not found", key)))?;
+        .ok_or_else(|| AppError::NotFound(format!("Flag '{key}' not found")))?;
 
     // Delete flag (cascade should handle flag_values)
     state.storage.delete_flag(&flag.id).await?;

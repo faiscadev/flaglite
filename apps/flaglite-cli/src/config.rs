@@ -157,8 +157,9 @@ impl Config {
 
         // Create directory if needed
         if !dir.exists() {
-            fs::create_dir_all(&dir)
-                .with_context(|| format!("Failed to create credentials directory: {}", dir.display()))?;
+            fs::create_dir_all(&dir).with_context(|| {
+                format!("Failed to create credentials directory: {}", dir.display())
+            })?;
         }
 
         let creds = Credentials {
@@ -209,16 +210,16 @@ impl Config {
         if let Some(key) = &self.api_key {
             return Ok(key);
         }
-        self.token
-            .as_deref()
-            .ok_or_else(|| anyhow::anyhow!("Not logged in. Run `flaglite signup` or `flaglite login`"))
+        self.token.as_deref().ok_or_else(|| {
+            anyhow::anyhow!("Not logged in. Run `flaglite signup` or `flaglite login`")
+        })
     }
 
     /// Get the project ID, or error if not set
     pub fn require_project(&self) -> Result<&str> {
-        self.project_id
-            .as_deref()
-            .ok_or_else(|| anyhow::anyhow!("No project selected. Run 'flaglite projects use <id>' first."))
+        self.project_id.as_deref().ok_or_else(|| {
+            anyhow::anyhow!("No project selected. Run 'flaglite projects use <id>' first.")
+        })
     }
 
     /// Get the environment, defaulting to "development"

@@ -4,9 +4,9 @@ use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use sqlx::SqlitePool;
 use std::str::FromStr;
 
+use super::Storage;
 use crate::error::Result;
 use crate::models::{ApiKey, Environment, Flag, FlagValue, Project, User};
-use super::Storage;
 
 pub struct SqliteStorage {
     pool: SqlitePool,
@@ -67,24 +67,20 @@ impl Storage for SqliteStorage {
     }
 
     async fn update_user(&self, user: &User) -> Result<()> {
-        sqlx::query(
-            "UPDATE users SET email = ?, updated_at = ? WHERE id = ?",
-        )
-        .bind(&user.email)
-        .bind(user.updated_at)
-        .bind(&user.id)
-        .execute(&self.pool)
-        .await?;
+        sqlx::query("UPDATE users SET email = ?, updated_at = ? WHERE id = ?")
+            .bind(&user.email)
+            .bind(user.updated_at)
+            .bind(&user.id)
+            .execute(&self.pool)
+            .await?;
         Ok(())
     }
 
     async fn username_exists(&self, username: &str) -> Result<bool> {
-        let result: (i64,) = sqlx::query_as(
-            "SELECT COUNT(*) FROM users WHERE username = ?",
-        )
-        .bind(username)
-        .fetch_one(&self.pool)
-        .await?;
+        let result: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM users WHERE username = ?")
+            .bind(username)
+            .fetch_one(&self.pool)
+            .await?;
         Ok(result.0 > 0)
     }
 
@@ -127,13 +123,11 @@ impl Storage for SqliteStorage {
     }
 
     async fn revoke_api_key(&self, id: &str) -> Result<()> {
-        sqlx::query(
-            "UPDATE api_keys SET revoked_at = ? WHERE id = ?",
-        )
-        .bind(Utc::now())
-        .bind(id)
-        .execute(&self.pool)
-        .await?;
+        sqlx::query("UPDATE api_keys SET revoked_at = ? WHERE id = ?")
+            .bind(Utc::now())
+            .bind(id)
+            .execute(&self.pool)
+            .await?;
         Ok(())
     }
 
@@ -229,7 +223,11 @@ impl Storage for SqliteStorage {
         Ok(env)
     }
 
-    async fn get_environment_by_name(&self, project_id: &str, name: &str) -> Result<Option<Environment>> {
+    async fn get_environment_by_name(
+        &self,
+        project_id: &str,
+        name: &str,
+    ) -> Result<Option<Environment>> {
         let env = sqlx::query_as(
             "SELECT id, project_id, name, api_key, created_at FROM environments WHERE project_id = ? AND name = ?",
         )
@@ -315,7 +313,11 @@ impl Storage for SqliteStorage {
         Ok(())
     }
 
-    async fn get_flag_value(&self, flag_id: &str, environment_id: &str) -> Result<Option<FlagValue>> {
+    async fn get_flag_value(
+        &self,
+        flag_id: &str,
+        environment_id: &str,
+    ) -> Result<Option<FlagValue>> {
         let fv = sqlx::query_as(
             "SELECT id, flag_id, environment_id, enabled, rollout_percentage, updated_at FROM flag_values WHERE flag_id = ? AND environment_id = ?",
         )
@@ -346,8 +348,7 @@ impl Storage for SqliteStorage {
 
         let placeholders = flag_ids.iter().map(|_| "?").collect::<Vec<_>>().join(",");
         let query_str = format!(
-            "SELECT id, flag_id, environment_id, enabled, rollout_percentage, updated_at FROM flag_values WHERE flag_id IN ({})",
-            placeholders
+            "SELECT id, flag_id, environment_id, enabled, rollout_percentage, updated_at FROM flag_values WHERE flag_id IN ({placeholders})",
         );
 
         let mut query = sqlx::query_as(&query_str);
@@ -494,9 +495,11 @@ impl Storage for SqliteStorage {
         sqlx::query("CREATE INDEX IF NOT EXISTS idx_projects_api_key ON projects(api_key)")
             .execute(&self.pool)
             .await?;
-        sqlx::query("CREATE INDEX IF NOT EXISTS idx_environments_project ON environments(project_id)")
-            .execute(&self.pool)
-            .await?;
+        sqlx::query(
+            "CREATE INDEX IF NOT EXISTS idx_environments_project ON environments(project_id)",
+        )
+        .execute(&self.pool)
+        .await?;
         sqlx::query("CREATE INDEX IF NOT EXISTS idx_environments_api_key ON environments(api_key)")
             .execute(&self.pool)
             .await?;

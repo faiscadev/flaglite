@@ -31,7 +31,7 @@ pub async fn list(config: &Config, output: &Output) -> Result<()> {
     let flags = client.list_flags(project_id, Some(env)).await?;
 
     if !output.is_json() {
-        output.info(&format!("Flags in environment: {}", env));
+        output.info(&format!("Flags in environment: {env}"));
     }
 
     output.print_flags(&flags)?;
@@ -60,8 +60,7 @@ pub async fn create(
         "json" | "object" => FlagType::Json,
         _ => {
             return Err(anyhow::anyhow!(
-                "Invalid flag type: '{}'. Use: boolean, string, number, or json",
-                flag_type
+                "Invalid flag type: '{flag_type}'. Use: boolean, string, number, or json",
             ));
         }
     };
@@ -119,7 +118,7 @@ pub async fn toggle(config: &Config, output: &Output, key: String) -> Result<()>
     let flag = client.toggle_flag(project_id, &key, env).await?;
 
     let status = if flag.enabled { "enabled" } else { "disabled" };
-    output.success(&format!("Flag '{}' is now {} in {}", key, status, env));
+    output.success(&format!("Flag '{key}' is now {status} in {env}"));
 
     Ok(())
 }
@@ -133,8 +132,7 @@ pub async fn delete(config: &Config, output: &Output, key: String, yes: bool) ->
     if !yes && !output.is_json() {
         let confirmed = Confirm::new()
             .with_prompt(format!(
-                "Are you sure you want to delete flag '{}'? This cannot be undone.",
-                key
+                "Are you sure you want to delete flag '{key}'? This cannot be undone.",
             ))
             .default(false)
             .interact()?;
@@ -147,7 +145,7 @@ pub async fn delete(config: &Config, output: &Output, key: String, yes: bool) ->
 
     client.delete_flag(project_id, &key).await?;
 
-    output.success(&format!("Flag '{}' deleted.", key));
+    output.success(&format!("Flag '{key}' deleted."));
 
     Ok(())
 }

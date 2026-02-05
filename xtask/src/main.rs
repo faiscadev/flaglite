@@ -7,7 +7,7 @@
 
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
-    
+
     if args.is_empty() {
         eprintln!("Usage: cargo xtask <command>");
         eprintln!();
@@ -16,10 +16,7 @@ fn main() {
         std::process::exit(1);
     }
 
-    match args[0].as_str() {
-        cmd => {
-            eprintln!("Unknown command: {}", cmd);
-            std::process::exit(1);
-        }
-    }
+    let cmd = &args[0];
+    eprintln!("Unknown command: {cmd}");
+    std::process::exit(1);
 }

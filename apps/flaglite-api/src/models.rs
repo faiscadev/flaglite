@@ -121,7 +121,7 @@ impl From<Project> for ProjectResponse {
 pub struct Environment {
     pub id: String,
     pub project_id: String,
-    pub name: String, // development, staging, production
+    pub name: String,    // development, staging, production
     pub api_key: String, // ffl_env_*
     pub created_at: DateTime<Utc>,
 }

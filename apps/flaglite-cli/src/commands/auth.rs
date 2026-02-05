@@ -27,14 +27,10 @@ pub async fn signup(config: &mut Config, output: &Output) -> Result<()> {
     };
 
     // Get password
-    let password: String = Password::new()
-        .with_prompt("Password")
-        .interact()?;
+    let password: String = Password::new().with_prompt("Password").interact()?;
 
     // Confirm password
-    let password_confirm: String = Password::new()
-        .with_prompt("Confirm password")
-        .interact()?;
+    let password_confirm: String = Password::new().with_prompt("Confirm password").interact()?;
 
     if password != password_confirm {
         return Err(anyhow::anyhow!("Passwords do not match"));
@@ -82,14 +78,10 @@ pub async fn login(config: &mut Config, output: &Output) -> Result<()> {
     }
 
     // Get username
-    let username: String = Input::new()
-        .with_prompt("Username")
-        .interact_text()?;
+    let username: String = Input::new().with_prompt("Username").interact_text()?;
 
     // Get password
-    let password: String = Password::new()
-        .with_prompt("Password")
-        .interact()?;
+    let password: String = Password::new().with_prompt("Password").interact()?;
 
     // Authenticate
     let client = FlagLiteClient::new(&config.api_url);

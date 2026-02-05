@@ -1,8 +1,8 @@
+mod auth;
 mod config;
 mod error;
 mod handlers;
 mod models;
-mod auth;
 mod storage;
 mod username;
 
@@ -31,7 +31,7 @@ enum Commands {
         /// Port to listen on
         #[arg(short, long, default_value = "3000")]
         port: u16,
-        
+
         /// Host to bind to
         #[arg(long, default_value = "0.0.0.0")]
         host: String,
@@ -60,10 +60,10 @@ async fn main() -> anyhow::Result<()> {
     match cli.command {
         Commands::Serve { port, host } => {
             let storage = storage::create_storage(&config.database_url).await?;
-            
+
             // Run migrations on startup
             storage.run_migrations().await?;
-            
+
             let app_state = models::AppState {
                 storage,
                 jwt_secret: config.jwt_secret,
@@ -71,8 +71,8 @@ async fn main() -> anyhow::Result<()> {
 
             let app = create_router(app_state);
 
-            let addr: SocketAddr = format!("{}:{}", host, port).parse()?;
-            tracing::info!("🚀 FlagLite API listening on {}", addr);
+            let addr: SocketAddr = format!("{host}:{port}").parse()?;
+            tracing::info!("🚀 FlagLite API listening on {addr}");
 
             let listener = tokio::net::TcpListener::bind(addr).await?;
             axum::serve(listener, app).await?;
@@ -101,20 +101,44 @@ fn create_router(state: models::AppState) -> Router {
         // Auth routes
         .route("/v1/auth/signup", post(handlers::auth::signup))
         .route("/v1/auth/login", post(handlers::auth::login))
-        .route("/v1/auth/me", get(handlers::auth::me).patch(handlers::auth::update_me))
+        .route(
+            "/v1/auth/me",
+            get(handlers::auth::me).patch(handlers::auth::update_me),
+        )
         // CLI-compatible project routes (no /v1 prefix)
         .route("/projects", get(handlers::cli::list_projects))
         .route("/projects", post(handlers::cli::create_project))
-        .route("/projects/:project_id/environments", get(handlers::cli::list_environments))
-        .route("/projects/:project_id/flags", get(handlers::cli::list_flags))
-        .route("/projects/:project_id/flags", post(handlers::cli::create_flag))
-        .route("/projects/:project_id/flags/:key", get(handlers::cli::get_flag))
-        .route("/projects/:project_id/flags/:key", delete(handlers::cli::delete_flag))
-        .route("/projects/:project_id/flags/:key/toggle", post(handlers::cli::toggle_flag))
+        .route(
+            "/projects/:project_id/environments",
+            get(handlers::cli::list_environments),
+        )
+        .route(
+            "/projects/:project_id/flags",
+            get(handlers::cli::list_flags),
+        )
+        .route(
+            "/projects/:project_id/flags",
+            post(handlers::cli::create_flag),
+        )
+        .route(
+            "/projects/:project_id/flags/:key",
+            get(handlers::cli::get_flag),
+        )
+        .route(
+            "/projects/:project_id/flags/:key",
+            delete(handlers::cli::delete_flag),
+        )
+        .route(
+            "/projects/:project_id/flags/:key/toggle",
+            post(handlers::cli::toggle_flag),
+        )
         // Legacy v1 project routes (for backward compatibility)
         .route("/v1/projects", get(handlers::projects::list_projects))
         .route("/v1/projects", post(handlers::projects::create_project))
-        .route("/v1/projects/:project_id/environments", get(handlers::projects::list_environments))
+        .route(
+            "/v1/projects/:project_id/environments",
+            get(handlers::projects::list_environments),
+        )
         // SDK flag routes (v1 prefix)
         .route("/v1/flags", get(handlers::flags::list_flags))
         .route("/v1/flags", post(handlers::flags::create_flag))

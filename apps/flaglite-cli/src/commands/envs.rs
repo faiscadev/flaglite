@@ -47,12 +47,12 @@ pub async fn use_env(config: &mut Config, output: &Output, name: String) -> Resu
         Some(e) => {
             config.environment = Some(e.slug.clone());
             config.save()?;
-            output.success(&format!("Now using environment: {}", e.name));
+            let env_name = &e.name;
+            output.success(&format!("Now using environment: {env_name}"));
         }
         None => {
             return Err(anyhow::anyhow!(
-                "Environment '{}' not found. Run 'flaglite envs list' to see available environments.",
-                name
+                "Environment '{name}' not found. Run 'flaglite envs list' to see available environments.",
             ));
         }
     }

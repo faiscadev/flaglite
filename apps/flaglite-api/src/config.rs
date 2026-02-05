@@ -10,8 +10,8 @@ impl Config {
         let database_url = std::env::var("DATABASE_URL")
             .unwrap_or_else(|_| "sqlite:flaglite.db?mode=rwc".to_string());
 
-        let jwt_secret = std::env::var("JWT_SECRET")
-            .context("JWT_SECRET environment variable is required")?;
+        let jwt_secret =
+            std::env::var("JWT_SECRET").context("JWT_SECRET environment variable is required")?;
 
         Ok(Config {
             database_url,

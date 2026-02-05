@@ -42,23 +42,26 @@ pub async fn signup(
                 "Username must be at most 32 characters".to_string(),
             ));
         }
-        if !username.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '_') {
+        if !username
+            .chars()
+            .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
+        {
             return Err(AppError::BadRequest(
                 "Username can only contain letters, numbers, hyphens, and underscores".to_string(),
             ));
         }
-        
+
         // Check if username exists
         if state.storage.username_exists(&username).await? {
             return Err(AppError::UserAlreadyExists);
         }
-        
+
         username
     } else {
         // Auto-generate username with collision handling
         let mut username = generate_username();
         let mut retries = 0;
-        
+
         while state.storage.username_exists(&username).await? {
             if retries >= MAX_USERNAME_RETRIES {
                 // Fall back to username with suffix
@@ -67,12 +70,14 @@ pub async fn signup(
                 username = generate_username();
             }
             retries += 1;
-            
+
             if retries > MAX_USERNAME_RETRIES * 2 {
-                return Err(AppError::Internal("Failed to generate unique username".to_string()));
+                return Err(AppError::Internal(
+                    "Failed to generate unique username".to_string(),
+                ));
             }
         }
-        
+
         username
     };
 

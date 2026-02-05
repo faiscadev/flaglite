@@ -17,7 +17,7 @@ use crate::models::{
 
 /// Deterministic percentage rollout using murmur3 hash
 fn is_enabled_for_user(flag_key: &str, user_id: &str, rollout_percentage: i32) -> bool {
-    let input = format!("{}:{}", flag_key, user_id);
+    let input = format!("{flag_key}:{user_id}");
     let hash = murmur3::murmur3_32(&mut Cursor::new(input.as_bytes()), 0).unwrap_or(0);
     let bucket = (hash % 100) as i32;
     bucket < rollout_percentage
@@ -40,7 +40,7 @@ pub async fn evaluate_flag(
         .storage
         .get_flag_by_key(&project_id, &key)
         .await?
-        .ok_or_else(|| AppError::NotFound(format!("Flag '{}' not found", key)))?;
+        .ok_or_else(|| AppError::NotFound(format!("Flag '{key}' not found")))?;
 
     // If using env API key, get that specific environment's value
     // If using project key, default to production
@@ -52,7 +52,9 @@ pub async fn evaluate_flag(
                 .storage
                 .get_environment_by_name(&project_id, "production")
                 .await?
-                .ok_or_else(|| AppError::NotFound("Production environment not found".to_string()))?;
+                .ok_or_else(|| {
+                    AppError::NotFound("Production environment not found".to_string())
+                })?;
             env.id
         }
     };
@@ -95,7 +97,10 @@ pub async fn list_flags(
     let flags = state.storage.list_flags_by_project(&project.id).await?;
 
     // Get all environments
-    let environments = state.storage.list_environments_by_project(&project.id).await?;
+    let environments = state
+        .storage
+        .list_environments_by_project(&project.id)
+        .await?;
 
     let env_map: HashMap<String, String> = environments
         .iter()
@@ -104,7 +109,10 @@ pub async fn list_flags(
 
     // Get all flag values
     let flag_ids: Vec<String> = flags.iter().map(|f| f.id.clone()).collect();
-    let flag_values = state.storage.list_flag_values_by_flag_ids(&flag_ids).await?;
+    let flag_values = state
+        .storage
+        .list_flag_values_by_flag_ids(&flag_ids)
+        .await?;
 
     // Group flag values by flag_id
     let mut flag_value_map: HashMap<String, Vec<FlagValue>> = HashMap::new();
@@ -167,9 +175,14 @@ pub async fn create_flag(
     if req.key.is_empty() || req.key.len() > 255 {
         return Err(AppError::BadRequest("Invalid flag key".to_string()));
     }
-    if !req.key.chars().all(|c| c.is_alphanumeric() || c == '-' || c == '_') {
+    if !req
+        .key
+        .chars()
+        .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
+    {
         return Err(AppError::BadRequest(
-            "Flag key can only contain alphanumeric characters, hyphens, and underscores".to_string(),
+            "Flag key can only contain alphanumeric characters, hyphens, and underscores"
+                .to_string(),
         ));
     }
 
@@ -199,7 +212,10 @@ pub async fn create_flag(
     state.storage.create_flag(&flag).await?;
 
     // Get all environments and create default flag values
-    let environments = state.storage.list_environments_by_project(&project.id).await?;
+    let environments = state
+        .storage
+        .list_environments_by_project(&project.id)
+        .await?;
 
     let mut env_values: HashMap<String, FlagEnvironmentValue> = HashMap::new();
 
@@ -245,14 +261,14 @@ pub async fn update_flag_value(
         .storage
         .get_flag_by_key(&project.id, &key)
         .await?
-        .ok_or_else(|| AppError::NotFound(format!("Flag '{}' not found", key)))?;
+        .ok_or_else(|| AppError::NotFound(format!("Flag '{key}' not found")))?;
 
     // Get the environment
     let environment = state
         .storage
         .get_environment_by_name(&project.id, &env_name)
         .await?
-        .ok_or_else(|| AppError::NotFound(format!("Environment '{}' not found", env_name)))?;
+        .ok_or_else(|| AppError::NotFound(format!("Environment '{env_name}' not found")))?;
 
     // Get or create flag value
     let existing = state
@@ -268,7 +284,7 @@ pub async fn update_flag_value(
             let new_rollout = req.rollout_percentage.unwrap_or(fv.rollout_percentage);
 
             // Validate rollout percentage
-            if new_rollout < 0 || new_rollout > 100 {
+            if !(0..=100).contains(&new_rollout) {
                 return Err(AppError::BadRequest(
                     "Rollout percentage must be between 0 and 100".to_string(),
                 ));
@@ -291,7 +307,7 @@ pub async fn update_flag_value(
             let enabled = req.enabled.unwrap_or(false);
             let rollout = req.rollout_percentage.unwrap_or(100);
 
-            if rollout < 0 || rollout > 100 {
+            if !(0..=100).contains(&rollout) {
                 return Err(AppError::BadRequest(
                     "Rollout percentage must be between 0 and 100".to_string(),
                 ));
@@ -313,10 +329,7 @@ pub async fn update_flag_value(
         }
     };
 
-    Ok(Json(FlagEnvironmentValue {
-        enabled,
-        rollout,
-    }))
+    Ok(Json(FlagEnvironmentValue { enabled, rollout }))
 }
 
 /// Toggle a flag in a specific environment
@@ -331,14 +344,15 @@ pub async fn toggle_flag(
         .storage
         .get_flag_by_key(&project.id, &key)
         .await?
-        .ok_or_else(|| AppError::NotFound(format!("Flag '{}' not found", key)))?;
+        .ok_or_else(|| AppError::NotFound(format!("Flag '{key}' not found")))?;
 
     // Get the environment
+    let env_name = &query.environment;
     let environment = state
         .storage
-        .get_environment_by_name(&project.id, &query.environment)
+        .get_environment_by_name(&project.id, env_name)
         .await?
-        .ok_or_else(|| AppError::NotFound(format!("Environment '{}' not found", query.environment)))?;
+        .ok_or_else(|| AppError::NotFound(format!("Environment '{env_name}' not found")))?;
 
     let now = Utc::now();
 
