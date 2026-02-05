@@ -7,7 +7,7 @@ import { Button } from '../components/Button';
 
 export function LoginPage() {
   const [isSignup, setIsSignup] = useState(false);
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -19,11 +19,22 @@ export function LoginPage() {
 
     try {
       const response = isSignup
-        ? await authApi.signup(email, password)
-        : await authApi.login(email, password);
+        ? await authApi.signup(password, username || undefined)
+        : await authApi.login(username, password);
 
       login(response.token);
-      toast.success(isSignup ? 'Account created!' : 'Welcome back!');
+      
+      // Show API key on signup
+      if (isSignup && response.api_key?.key) {
+        toast.success(
+          `Account created! Your API key: ${response.api_key.key.slice(0, 16)}... (check console)`,
+          { duration: 8000 }
+        );
+        console.log('Your API key (save this!):', response.api_key.key);
+      } else {
+        toast.success('Welcome back!');
+      }
+      
       navigate('/');
     } catch (error: any) {
       const message = error.response?.data?.error || 'Something went wrong';
@@ -55,19 +66,20 @@ export function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
-                htmlFor="email"
+                htmlFor="username"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
               >
-                Email
+                Username
+                {isSignup && <span className="text-gray-400 font-normal"> (optional)</span>}
               </label>
               <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                type="text"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required={!isSignup}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                placeholder="you@example.com"
+                placeholder={isSignup ? "brave-otter (auto-generated if empty)" : "your-username"}
               />
             </div>
 
