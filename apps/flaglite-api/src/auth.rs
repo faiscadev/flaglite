@@ -125,6 +125,7 @@ impl FromRequestParts<AppState> for AuthUser {
 }
 
 /// Extracts project from project API key, user API key, or JWT
+#[allow(dead_code)] // Kept for future SDK use
 pub struct AuthProject(pub Project);
 
 #[async_trait]
@@ -227,6 +228,7 @@ impl FromRequestParts<AppState> for AuthEnvironment {
 }
 
 /// Flexible auth - accepts project key, env key, user API key, or JWT
+#[allow(dead_code)] // Kept for future SDK use
 pub enum FlexAuth {
     Project(Project),
     Environment(Environment, Project),

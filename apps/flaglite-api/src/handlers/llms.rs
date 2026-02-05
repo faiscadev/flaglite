@@ -24,10 +24,10 @@ FlagLite is an open-source feature flag service. Self-host or use our hosted ver
 
 2. Create a flag:
    ```bash
-   curl -X POST http://localhost:8080/v1/flags \
-     -H "Authorization: Bearer $API_KEY" \
+   curl -X POST http://localhost:8080/v1/projects/$PROJECT_ID/flags \
+     -H "Authorization: Bearer $JWT_TOKEN" \
      -H "Content-Type: application/json" \
-     -d '{"name": "new-feature", "enabled": false}'
+     -d '{"key": "new-feature", "name": "New Feature", "enabled": false}'
    ```
 
 3. Evaluate in your app (see SDK examples below)
@@ -41,16 +41,19 @@ Base URL: `https://api.flaglite.dev/v1` (or your self-hosted instance)
 - `POST /v1/auth/login` — Get JWT token
 - `GET /v1/auth/me` — Get current user
 
-### Flags
-- `GET /v1/flags` — List all flags
-- `POST /v1/flags` — Create flag `{"name": "string", "enabled": bool, "rollout_percentage": 0-100}`
-- `GET /v1/flags/{id}` — Get flag
-- `PATCH /v1/flags/{id}` — Update flag
-- `DELETE /v1/flags/{id}` — Delete flag
-- `POST /v1/flags/{id}/toggle` — Toggle flag on/off
+### Projects
+- `GET /v1/projects` — List all projects
+- `POST /v1/projects` — Create project `{"name": "string"}`
 
-### Evaluation
-- `GET /v1/flags/{id}/evaluate?user_id={id}` — Evaluate flag for user
+### Environments
+- `GET /v1/projects/{project_id}/environments` — List environments (dev/staging/prod)
+
+### Flags
+- `GET /v1/projects/{project_id}/flags?environment={env}` — List all flags
+- `POST /v1/projects/{project_id}/flags` — Create flag `{"key": "string", "name": "string", "enabled": bool}`
+- `GET /v1/projects/{project_id}/flags/{key}?environment={env}` — Get flag with state
+- `DELETE /v1/projects/{project_id}/flags/{key}` — Delete flag
+- `POST /v1/projects/{project_id}/flags/{key}/toggle?environment={env}` — Toggle flag on/off
 
 ## SDKs
 

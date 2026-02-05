@@ -7,7 +7,7 @@ mod storage;
 mod username;
 
 use axum::{
-    routing::{delete, get, patch, post},
+    routing::{delete, get, post},
     Router,
 };
 use clap::{Parser, Subcommand};
@@ -132,15 +132,6 @@ fn create_router(state: models::AppState) -> Router {
             "/v1/projects/:project_id/flags/:key/toggle",
             post(handlers::cli::toggle_flag),
         )
-        // SDK flag routes (v1 prefix)
-        .route("/v1/flags", get(handlers::flags::list_flags))
-        .route("/v1/flags", post(handlers::flags::create_flag))
-        .route("/v1/flags/:key", get(handlers::flags::evaluate_flag))
-        .route(
-            "/v1/flags/:key/environments/:env",
-            patch(handlers::flags::update_flag_value),
-        )
-        .route("/v1/flags/:key/toggle", post(handlers::flags::toggle_flag))
         .layer(TraceLayer::new_for_http())
         .layer(cors)
         .with_state(state)

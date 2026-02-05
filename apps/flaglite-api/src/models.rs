@@ -238,6 +238,7 @@ pub struct UpdateUserRequest {
     pub email: Option<String>,
 }
 
+#[allow(dead_code)] // Kept for future SDK use
 #[derive(Debug, Deserialize)]
 pub struct CreateFlagRequest {
     pub key: String,
@@ -245,17 +246,20 @@ pub struct CreateFlagRequest {
     pub description: Option<String>,
 }
 
+#[allow(dead_code)] // Kept for future SDK use
 #[derive(Debug, Deserialize)]
 pub struct UpdateFlagValueRequest {
     pub enabled: Option<bool>,
     pub rollout_percentage: Option<i32>,
 }
 
+#[allow(dead_code)] // Kept for future SDK use
 #[derive(Debug, Deserialize)]
 pub struct ToggleFlagQuery {
     pub environment: String,
 }
 
+#[allow(dead_code)] // Kept for future SDK use  
 #[derive(Debug, Deserialize)]
 pub struct EvaluateFlagQuery {
     pub user_id: Option<String>,
