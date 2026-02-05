@@ -1,42 +1,29 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import { Plus, RefreshCw, FolderOpen } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { Layout } from '../components/Layout';
 import { Button } from '../components/Button';
 import { Toggle } from '../components/Toggle';
 import { CreateFlagModal } from './CreateFlagModal';
 import { flagsApi } from '../lib/api';
-import { useProject } from '../context/ProjectContext';
 import type { Flag } from '../lib/api';
 
-// Environment options matching the API
-const ENVIRONMENTS = [
-  { value: 'development', label: 'Development' },
-  { value: 'staging', label: 'Staging' },
-  { value: 'production', label: 'Production' },
-] as const;
+const ENVIRONMENTS = ['dev', 'staging', 'prod'] as const;
 
 export function DashboardPage() {
-  const { currentProject, projects, selectProject, loading: projectsLoading } = useProject();
   const [flags, setFlags] = useState<Flag[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedEnv, setSelectedEnv] = useState<string>('development');
+  const [selectedEnv, setSelectedEnv] = useState<string>('dev');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [togglingFlags, setTogglingFlags] = useState<Set<string>>(new Set());
 
   const fetchFlags = async (showLoader = true) => {
-    if (!currentProject) {
-      setFlags([]);
-      setLoading(false);
-      return;
-    }
-
     if (showLoader) setLoading(true);
     else setRefreshing(true);
 
     try {
-      const data = await flagsApi.list(currentProject.id, selectedEnv);
+      const data = await flagsApi.list();
       setFlags(data);
     } catch (error) {
       toast.error('Failed to load flags');
@@ -47,19 +34,15 @@ export function DashboardPage() {
   };
 
   useEffect(() => {
-    if (currentProject) {
-      fetchFlags();
-    }
-  }, [currentProject, selectedEnv]);
+    fetchFlags();
+  }, []);
 
   const handleToggle = async (flag: Flag) => {
-    if (!currentProject) return;
-    
     const key = flag.key;
     setTogglingFlags((prev) => new Set(prev).add(key));
 
     try {
-      await flagsApi.toggle(currentProject.id, key, selectedEnv);
+      await flagsApi.toggle(key, selectedEnv);
       await fetchFlags(false);
       toast.success(`Flag "${flag.name}" toggled`);
     } catch (error) {
@@ -73,33 +56,19 @@ export function DashboardPage() {
     }
   };
 
-  // Show loading state while projects are loading
-  if (projectsLoading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center h-64">
-          <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
-        </div>
-      </Layout>
-    );
-  }
+  const getFlagStatus = (flag: Flag): boolean => {
+    if (flag.environments && flag.environments[selectedEnv]) {
+      return flag.environments[selectedEnv].enabled;
+    }
+    return flag.enabled;
+  };
 
-  // Show message if no projects exist
-  if (!currentProject && projects.length === 0) {
-    return (
-      <Layout>
-        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-12 text-center">
-          <FolderOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-            No Projects Yet
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400 mb-4">
-            Create a project to start managing feature flags.
-          </p>
-        </div>
-      </Layout>
-    );
-  }
+  const getRollout = (flag: Flag): number => {
+    if (flag.environments && flag.environments[selectedEnv]) {
+      return flag.environments[selectedEnv].rollout_percentage;
+    }
+    return flag.rollout_percentage;
+  };
 
   return (
     <Layout>
@@ -115,24 +84,6 @@ export function DashboardPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Project Selector */}
-          {projects.length > 1 && (
-            <select
-              value={currentProject?.id || ''}
-              onChange={(e) => {
-                const project = projects.find(p => p.id === e.target.value);
-                if (project) selectProject(project);
-              }}
-              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-          )}
-
           {/* Environment Selector */}
           <select
             value={selectedEnv}
@@ -140,8 +91,8 @@ export function DashboardPage() {
             className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             {ENVIRONMENTS.map((env) => (
-              <option key={env.value} value={env.value}>
-                {env.label}
+              <option key={env} value={env}>
+                {env.charAt(0).toUpperCase() + env.slice(1)}
               </option>
             ))}
           </select>
@@ -161,16 +112,6 @@ export function DashboardPage() {
           </Button>
         </div>
       </div>
-
-      {/* Current Project Badge */}
-      {currentProject && projects.length === 1 && (
-        <div className="mb-4">
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300">
-            <FolderOpen className="w-4 h-4 mr-2" />
-            {currentProject.name}
-          </span>
-        </div>
-      )}
 
       {/* Flags Table */}
       {loading ? (
@@ -201,6 +142,9 @@ export function DashboardPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Status
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Rollout
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -223,10 +167,15 @@ export function DashboardPage() {
                   </td>
                   <td className="px-6 py-4">
                     <Toggle
-                      enabled={flag.enabled}
+                      enabled={getFlagStatus(flag)}
                       onChange={() => handleToggle(flag)}
                       disabled={togglingFlags.has(flag.key)}
                     />
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {getRollout(flag)}%
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -236,17 +185,14 @@ export function DashboardPage() {
       )}
 
       {/* Create Flag Modal */}
-      {currentProject && (
-        <CreateFlagModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onCreated={() => {
-            setIsModalOpen(false);
-            fetchFlags(false);
-          }}
-          projectId={currentProject.id}
-        />
-      )}
+      <CreateFlagModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onCreated={() => {
+          setIsModalOpen(false);
+          fetchFlags(false);
+        }}
+      />
     </Layout>
   );
 }

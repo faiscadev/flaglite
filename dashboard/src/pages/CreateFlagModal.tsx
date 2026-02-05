@@ -8,7 +8,6 @@ interface CreateFlagModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreated: () => void;
-  projectId: string;
 }
 
 function generateKey(name: string): string {
@@ -18,10 +17,11 @@ function generateKey(name: string): string {
     .replace(/^-|-$/g, '');
 }
 
-export function CreateFlagModal({ isOpen, onClose, onCreated, projectId }: CreateFlagModalProps) {
+export function CreateFlagModal({ isOpen, onClose, onCreated }: CreateFlagModalProps) {
   const [name, setName] = useState('');
   const [key, setKey] = useState('');
   const [description, setDescription] = useState('');
+  const [rollout, setRollout] = useState(100);
   const [loading, setLoading] = useState(false);
 
   // Auto-generate key from name
@@ -33,6 +33,7 @@ export function CreateFlagModal({ isOpen, onClose, onCreated, projectId }: Creat
     setName('');
     setKey('');
     setDescription('');
+    setRollout(100);
   };
 
   const handleClose = () => {
@@ -45,7 +46,7 @@ export function CreateFlagModal({ isOpen, onClose, onCreated, projectId }: Creat
     setLoading(true);
 
     try {
-      await flagsApi.create(projectId, {
+      await flagsApi.create({
         name,
         key,
         description: description || undefined,
@@ -95,12 +96,12 @@ export function CreateFlagModal({ isOpen, onClose, onCreated, projectId }: Creat
             value={key}
             onChange={(e) => setKey(e.target.value)}
             required
-            pattern="[a-z0-9-_]+"
+            pattern="[a-z0-9-]+"
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm"
             placeholder="new-feature"
           />
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Lowercase letters, numbers, hyphens, and underscores only
+            Lowercase letters, numbers, and hyphens only
           </p>
         </div>
 
@@ -120,6 +121,29 @@ export function CreateFlagModal({ isOpen, onClose, onCreated, projectId }: Creat
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
             placeholder="What does this flag control?"
           />
+        </div>
+
+        <div>
+          <label
+            htmlFor="rollout"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
+            Rollout Percentage: {rollout}%
+          </label>
+          <input
+            type="range"
+            id="rollout"
+            min="0"
+            max="100"
+            value={rollout}
+            onChange={(e) => setRollout(Number(e.target.value))}
+            className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+          />
+          <div className="flex justify-between text-xs text-gray-400 mt-1">
+            <span>0%</span>
+            <span>50%</span>
+            <span>100%</span>
+          </div>
         </div>
 
         <div className="flex gap-3 pt-4">

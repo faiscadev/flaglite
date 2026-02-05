@@ -32,45 +32,12 @@ api.interceptors.response.use(
 
 // Auth API
 export const authApi = {
-  login: async (username: string, password: string) => {
-    const response = await api.post('/v1/auth/login', { username, password });
+  login: async (email: string, password: string) => {
+    const response = await api.post('/v1/auth/login', { email, password });
     return response.data;
   },
-  signup: async (password: string, username?: string, project_name?: string) => {
-    const response = await api.post('/v1/auth/signup', { 
-      password, 
-      username,
-      project_name 
-    });
-    return response.data;
-  },
-  me: async () => {
-    const response = await api.get('/v1/auth/me');
-    return response.data;
-  },
-};
-
-// Projects API
-export interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  slug: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export const projectsApi = {
-  list: async (): Promise<Project[]> => {
-    const response = await api.get<Project[]>('/v1/projects');
-    return response.data;
-  },
-  create: async (data: { name: string; description?: string }): Promise<Project> => {
-    const response = await api.post<Project>('/v1/projects', data);
-    return response.data;
-  },
-  getEnvironments: async (projectId: string) => {
-    const response = await api.get(`/v1/projects/${projectId}/environments`);
+  signup: async (email: string, password: string) => {
+    const response = await api.post('/v1/auth/signup', { email, password });
     return response.data;
   },
 };
@@ -81,43 +48,36 @@ export interface Flag {
   name: string;
   key: string;
   description?: string;
-  flag_type: string;
-  project_id: string;
   enabled: boolean;
-  value?: any;
+  rollout_percentage: number;
+  environments?: Record<string, { enabled: boolean; rollout_percentage: number }>;
   created_at: string;
   updated_at: string;
 }
 
 export const flagsApi = {
-  list: async (projectId: string, environment: string = 'production'): Promise<Flag[]> => {
-    const response = await api.get<Flag[]>(
-      `/v1/projects/${projectId}/flags`,
-      { params: { environment } }
-    );
+  list: async () => {
+    const response = await api.get<{ flags: Flag[] }>('/v1/flags');
+    return response.data.flags;
+  },
+  get: async (key: string) => {
+    const response = await api.get<Flag>(`/v1/flags/${key}`);
     return response.data;
   },
-  get: async (projectId: string, key: string, environment: string = 'production'): Promise<Flag> => {
-    const response = await api.get<Flag>(
-      `/v1/projects/${projectId}/flags/${key}`,
-      { params: { environment } }
-    );
+  create: async (data: { name: string; key: string; description?: string }) => {
+    const response = await api.post<Flag>('/v1/flags', data);
     return response.data;
   },
-  create: async (projectId: string, data: { name: string; key: string; description?: string; enabled?: boolean }): Promise<Flag> => {
-    const response = await api.post<Flag>(`/v1/projects/${projectId}/flags`, data);
+  toggle: async (key: string, environment?: string) => {
+    const url = environment 
+      ? `/v1/flags/${key}/environments/${environment}/toggle`
+      : `/v1/flags/${key}/toggle`;
+    const response = await api.post<Flag>(url);
     return response.data;
   },
-  toggle: async (projectId: string, key: string, environment: string): Promise<Flag> => {
-    const response = await api.post<Flag>(
-      `/v1/projects/${projectId}/flags/${key}/toggle`,
-      null,
-      { params: { environment } }
-    );
+  update: async (key: string, environment: string, data: { enabled?: boolean; rollout_percentage?: number }) => {
+    const response = await api.patch<Flag>(`/v1/flags/${key}/environments/${environment}`, data);
     return response.data;
-  },
-  delete: async (projectId: string, key: string): Promise<void> => {
-    await api.delete(`/v1/projects/${projectId}/flags/${key}`);
   },
 };
 
@@ -126,7 +86,6 @@ export interface ApiKey {
   id: string;
   name: string;
   key: string;
-  key_prefix?: string;
   environment?: string;
   created_at: string;
 }

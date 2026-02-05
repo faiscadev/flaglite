@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { ProjectProvider } from './context/ProjectContext';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -62,9 +61,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <ProjectProvider>
-          <AppRoutes />
-          <Toaster
+        <AppRoutes />
+        <Toaster
           position="top-right"
           toastOptions={{
             duration: 3000,
@@ -75,7 +73,6 @@ export default function App() {
             className: 'dark:!bg-gray-800 dark:!text-gray-100',
           }}
         />
-        </ProjectProvider>
       </AuthProvider>
     </BrowserRouter>
   );
