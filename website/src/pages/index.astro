@@ -464,17 +464,19 @@ docker compose up -d`;
   </footer>
 
   <script>
-    // Tab switching for SDK examples
+    // Tab switching - scoped to each tab group
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         const tabId = tab.dataset.tab;
+        const tabContainer = tab.closest('.tabs');
+        const section = tabContainer.closest('section');
         
-        // Update active tab
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        // Update active tab (only within this tab group)
+        tabContainer.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         
-        // Update active pane
-        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+        // Update active pane (only within this section)
+        section.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
       });
     });
