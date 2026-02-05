@@ -456,6 +456,11 @@ code {
   display: block;
 }
 
+/* CSS-only fallback: show first tab-pane if none are active (shouldn't happen but safety net) */
+.tab-content:not(:has(.tab-pane.active)) .tab-pane:first-child {
+  display: block;
+}
+
 /* Comparison Table */
 .comparison {
   padding: 100px 0;
