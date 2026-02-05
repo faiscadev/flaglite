@@ -652,12 +652,12 @@ impl TestUser {
             .map(|s| s.trim().to_string())
             .unwrap_or_else(|| "boolean".to_string());
 
-        let enabled = stdout.lines().any(|line| {
-            (line.contains("Enabled:") || line.contains("Status:"))
-                && (line.to_lowercase().contains("true")
-                    || line.contains("✓")
-                    || line.contains("on"))
-        });
+        // Output format: "flag_key ENABLED" or "flag_key DISABLED" on first line
+        let enabled = stdout
+            .lines()
+            .next()
+            .map(|first_line| first_line.contains("ENABLED"))
+            .unwrap_or(false);
 
         Ok(FlagInfo {
             key: flag_key,
