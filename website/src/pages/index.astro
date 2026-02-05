@@ -454,6 +454,11 @@ docker compose up -d</code></pre>
         // Update active pane
         document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
+        
+        // Re-run syntax highlighting
+        if (typeof Prism !== 'undefined') {
+          Prism.highlightAll();
+        }
       });
     });
 
@@ -546,5 +551,9 @@ docker compose up -d</code></pre>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-go.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+  <script>
+    // Ensure all code blocks are highlighted after Prism loads
+    Prism.highlightAll();
+  </script>
 </body>
 </html>
