@@ -10,5 +10,5 @@
 pub mod harness;
 pub mod utils;
 
-pub use harness::{CommandResult, TestHarness, TestUser};
+pub use harness::{TestHarness, TestUser};
 pub use utils::*;

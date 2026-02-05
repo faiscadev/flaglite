@@ -94,7 +94,7 @@ impl TestHarness {
 
     /// Start the server process
     async fn start_server(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        let server_addr = format!("0.0.0.0:{}", self.port);
+        let _server_addr = format!("0.0.0.0:{}", self.port);
 
         // Create files to capture server output
         let stdout_file = File::create(&self.server_stdout_path)?;
