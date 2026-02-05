@@ -58,20 +58,20 @@ import '../styles/landing.css';
       <p class="section-subtitle">Pick your favorite install method. No email required to sign up.</p>
       
       <div class="tabs install-tabs">
-        <button class="tab active" data-tab="install-curl">curl</button>
-        <button class="tab" data-tab="install-npm">npm</button>
+        <button class="tab active" data-tab="install-npm">npm</button>
+        <button class="tab" data-tab="install-curl">curl</button>
         <button class="tab" data-tab="install-cargo">cargo</button>
       </div>
       
       <div class="tab-content">
-        <div class="tab-pane active" id="install-curl">
+        <div class="tab-pane active" id="install-npm">
           <div class="code-block">
             <div class="code-header">
               <span class="code-lang">bash</span>
               <button class="copy-btn">Copy</button>
             </div>
-            <pre><code class="language-bash"># Install CLI (works on macOS &amp; Linux)
-curl -fsSL https://flaglite.dev/install.sh | sh
+            <pre><code class="language-bash"># Install via npm (includes CLI + SDK)
+npm install -g flaglite
 
 # Sign up (no email needed!)
 flaglite signup
@@ -81,14 +81,14 @@ flaglite flags create dark-mode --enabled</code></pre>
           </div>
         </div>
         
-        <div class="tab-pane" id="install-npm">
+        <div class="tab-pane" id="install-curl">
           <div class="code-block">
             <div class="code-header">
               <span class="code-lang">bash</span>
               <button class="copy-btn">Copy</button>
             </div>
-            <pre><code class="language-bash"># Install via npm (includes CLI + SDK)
-npm install -g flaglite
+            <pre><code class="language-bash"># Install CLI (works on macOS &amp; Linux)
+curl -fsSL https://flaglite.dev/install.sh | sh
 
 # Sign up (no email needed!)
 flaglite signup
@@ -433,9 +433,6 @@ docker compose up -d</code></pre>
         </div>
         <div class="footer-links">
           <a href="https://github.com/faiscadev/flaglite">GitHub</a>
-          <a href="/docs">Docs</a>
-          <a href="/docs/self-hosting">Self-Hosting</a>
-          <a href="https://status.flaglite.dev">Status</a>
         </div>
       </div>
       <div class="footer-bottom">
