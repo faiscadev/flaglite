@@ -64,16 +64,17 @@ if flags.enabled("dark-mode", &user_id).await? {
 
 const usageCli = `# Great for scripts, CI/CD, and automation
 
-# Evaluate a flag
-flaglite flags eval dark-mode --user-id user-123
+# Check a flag's status
+flaglite flags get dark-mode
 
-# Use in a bash script
-if flaglite flags eval dark-mode --user-id $USER_ID --quiet; then
-    echo "Dark mode enabled!"
-fi
+# Toggle a flag on/off
+flaglite flags toggle dark-mode
 
-# JSON output for parsing
-flaglite flags eval dark-mode --user-id user-123 --format json`;
+# List all flags (JSON for parsing)
+flaglite flags list --format json
+
+# Create a new flag
+flaglite flags create new-feature --enabled`;
 
 const selfHost = `git clone https://github.com/faiscadev/flaglite
 cd flaglite
