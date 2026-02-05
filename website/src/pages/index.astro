@@ -87,6 +87,11 @@ docker compose up -d`;
   <title>FlagLite — Ship features faster. Stress less.</title>
   <meta name="description" content="Feature flags that get out of your way. Open source, dead simple, and your first flag ships in 30 seconds.">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <style>
+    /* Critical CSS for tabs - ensures content visible before stylesheet loads */
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+  </style>
   <script>
     // Apply theme before page renders to prevent flash
     (function() {
