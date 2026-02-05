@@ -10,8 +10,18 @@ import '../styles/landing.css';
   <title>FlagLite — Feature flags without the enterprise hangover</title>
   <meta name="description" content="Ship features safely with a 6.9MB binary. Open source (AGPL-3.0), self-host forever, first flag in 30 seconds.">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <!-- Syntax highlighting -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <!-- Syntax highlighting (both themes for light/dark mode) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" media="(prefers-color-scheme: dark)" id="prism-dark">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" media="(prefers-color-scheme: light)" id="prism-light">
+  <script>
+    // Apply theme before page renders to prevent flash
+    (function() {
+      const saved = localStorage.getItem('theme');
+      if (saved) {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    })();
+  </script>
 </head>
 <body>
   <!-- Header -->
@@ -22,6 +32,9 @@ import '../styles/landing.css';
         <a href="/docs">Docs</a>
         <a href="https://github.com/faiscadev/flaglite">GitHub</a>
         <a href="#pricing">Pricing</a>
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+          <span class="theme-icon">🌙</span>
+        </button>
       </div>
     </nav>
   </header>
@@ -332,6 +345,55 @@ if client.evaluate("dark-mode", "user-123").await? &#123;
           target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
+    });
+
+    // Theme toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = themeToggle.querySelector('.theme-icon');
+    const prismDark = document.getElementById('prism-dark');
+    const prismLight = document.getElementById('prism-light');
+
+    function getPreferredTheme() {
+      const saved = localStorage.getItem('theme');
+      if (saved) return saved;
+      return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      themeIcon.textContent = theme === 'light' ? '☀️' : '🌙';
+      
+      // Update Prism theme
+      if (theme === 'light') {
+        prismDark.media = 'not all';
+        prismLight.media = 'all';
+      } else {
+        prismDark.media = 'all';
+        prismLight.media = 'not all';
+      }
+      
+      // Re-highlight code
+      if (typeof Prism !== 'undefined') {
+        Prism.highlightAll();
+      }
+    }
+
+    // Initialize theme
+    const currentTheme = getPreferredTheme();
+    setTheme(currentTheme);
+
+    // Toggle on click
+    themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') || getPreferredTheme();
+      setTheme(current === 'light' ? 'dark' : 'light');
+    });
+
+    // Listen for system preference changes
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+      if (!localStorage.getItem('theme')) {
+        setTheme(e.matches ? 'light' : 'dark');
+      }
     });
   </script>
   
