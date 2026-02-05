@@ -1,0 +1,157 @@
+---
+// Quickstart Guide
+import { Code } from 'astro:components';
+---
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quickstart - FlagLite</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --fg: #fafafa;
+      --muted: #a1a1aa;
+      --accent: #3b82f6;
+      --code-bg: #18181b;
+      --border: #27272a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.7;
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    h2 { font-size: 1.5rem; margin: 2rem 0 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+    p { margin: 1rem 0; color: var(--muted); }
+    pre { background: var(--code-bg); padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
+    code { font-family: 'SF Mono', Consolas, monospace; font-size: 0.9rem; }
+    .lead { font-size: 1.2rem; color: var(--fg); }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--fg); }
+    td { color: var(--muted); }
+    td code { background: var(--code-bg); padding: 0.2rem 0.4rem; border-radius: 4px; }
+    .back { margin-bottom: 2rem; display: inline-block; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+  </style>
+</head>
+<body>
+  <a href="/" class="back">← Back to FlagLite</a>
+  
+  <h1>Quickstart</h1>
+  <p class="lead">Get feature flags running in 5 minutes.</p>
+  
+  <hr>
+  
+  <h2>1. Install the CLI</h2>
+  <Code code="curl -fsSL https://flaglite.dev/install.sh | sh" lang="bash" theme="github-dark" />
+  
+  <p><strong>Alternatives:</strong></p>
+  <Code code={`# npm
+npm install -g flaglite
+
+# cargo
+cargo install flaglite`} lang="bash" theme="github-dark" />
+  
+  <p>Verify installation:</p>
+  <Code code="flaglite --version" lang="bash" theme="github-dark" />
+  
+  <hr>
+  
+  <h2>2. Create an Account</h2>
+  <Code code="flaglite signup" lang="bash" theme="github-dark" />
+  <p>This creates your account with an auto-generated username (like <code>brave-otter</code>). No email required.</p>
+  
+  <p>Already have an account?</p>
+  <Code code="flaglite login" lang="bash" theme="github-dark" />
+  
+  <hr>
+  
+  <h2>3. Create a Flag</h2>
+  <Code code="flaglite flags create my-feature" lang="bash" theme="github-dark" />
+  <p>Output:</p>
+  <Code code="✓ Flag 'my-feature' created (disabled)" lang="text" theme="github-dark" />
+  <p>Flags start <strong>disabled</strong> by default.</p>
+  
+  <hr>
+  
+  <h2>4. Toggle the Flag</h2>
+  <Code code="flaglite flags toggle my-feature" lang="bash" theme="github-dark" />
+  <p>Output:</p>
+  <Code code="✓ Flag 'my-feature' is now ENABLED" lang="text" theme="github-dark" />
+  
+  <hr>
+  
+  <h2>5. Use in Your Code</h2>
+  <p>Set your API key:</p>
+  <Code code="export FLAGLITE_API_KEY=flg_xxxxxxxx" lang="bash" theme="github-dark" />
+  
+  <h3>JavaScript</h3>
+  <Code code="npm install flaglite" lang="bash" theme="github-dark" />
+  <Code code={`import flags from 'flaglite'
+
+if (await flags.enabled('my-feature')) {
+  // New feature code
+}`} lang="javascript" theme="github-dark" />
+  
+  <h3>Python</h3>
+  <Code code="pip install flaglite" lang="bash" theme="github-dark" />
+  <Code code={`from flaglite import FlagLite
+
+flags = FlagLite()
+
+if await flags.enabled('my-feature'):
+    # New feature code`} lang="python" theme="github-dark" />
+  
+  <h3>Go</h3>
+  <Code code="go get github.com/faiscadev/flaglite-go" lang="bash" theme="github-dark" />
+  <Code code={`import "github.com/faiscadev/flaglite-go"
+
+client := flaglite.New()
+
+if client.Enabled("my-feature") {
+    // New feature code
+}`} lang="go" theme="github-dark" />
+  
+  <h3>Rust</h3>
+  <Code code="cargo add flaglite" lang="bash" theme="github-dark" />
+  <Code code={`use flaglite::FlagLite;
+
+let client = FlagLite::new()?;
+
+if client.enabled("my-feature").await {
+    // New feature code
+}`} lang="rust" theme="github-dark" />
+  
+  <hr>
+  
+  <h2>Quick Reference</h2>
+  <table>
+    <thead>
+      <tr><th>Command</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>flaglite signup</code></td><td>Create an account</td></tr>
+      <tr><td><code>flaglite login</code></td><td>Log in to existing account</td></tr>
+      <tr><td><code>flaglite flags create &lt;name&gt;</code></td><td>Create a new flag</td></tr>
+      <tr><td><code>flaglite flags list</code></td><td>List all flags</td></tr>
+      <tr><td><code>flaglite flags toggle &lt;name&gt;</code></td><td>Toggle a flag on/off</td></tr>
+      <tr><td><code>flaglite flags get &lt;name&gt;</code></td><td>Get flag status</td></tr>
+    </tbody>
+  </table>
+  
+  <hr>
+  
+  <p>Need help? <a href="https://github.com/faiscadev/flaglite">GitHub</a></p>
+</body>
+</html>
