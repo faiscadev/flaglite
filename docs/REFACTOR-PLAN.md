@@ -48,7 +48,7 @@ flaglite/
 │   ├── flaglite-storage/   # Storage trait definitions
 │   ├── flaglite-store-sqlite/   # SQLite implementation
 │   └── flaglite-store-postgres/ # PostgreSQL implementation
-├── sdks/                   # Non-Rust SDKs (JS, Python, Go)
+├── sdks/                   # REMOVED — SDKs stay in separate repos
 ├── website/                # Marketing site (Astro)
 ├── charts/                 # Helm charts
 ├── docker/                 # Dockerfiles
@@ -385,6 +385,7 @@ Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5
 
 ## Notes
 
-- Keep `sdks/`, `website/`, `dashboard/` outside Cargo workspace (non-Rust)
-- Consider moving dashboard to Leptos later (Phase N+1)
+- **SDKs stay in separate repos** (per Lucas) — `flaglite-js`, `flaglite-python`, `flaglite-go`
+- `website/`, `dashboard/` stay outside Cargo workspace (non-Rust)
+- Rust SDK could live in monorepo as `crates/flaglite-sdk` (optional)
 - Helm charts stay in `charts/` (standard convention)
