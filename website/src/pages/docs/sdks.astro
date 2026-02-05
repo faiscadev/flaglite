@@ -1,0 +1,578 @@
+---
+// SDK Examples
+import { Code } from 'astro:components';
+---
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDK Examples - FlagLite</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --fg: #fafafa;
+      --muted: #a1a1aa;
+      --accent: #3b82f6;
+      --code-bg: #18181b;
+      --border: #27272a;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --purple: #a855f7;
+      --orange: #f97316;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.7;
+      padding: 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    h2 { font-size: 1.5rem; margin: 2.5rem 0 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    h3 { font-size: 1.2rem; margin: 2rem 0 0.75rem; color: var(--fg); }
+    h4 { font-size: 1rem; margin: 1.5rem 0 0.5rem; color: var(--muted); }
+    p { margin: 1rem 0; color: var(--muted); }
+    pre { background: var(--code-bg); padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
+    code { font-family: 'SF Mono', Consolas, monospace; font-size: 0.9rem; }
+    .lead { font-size: 1.2rem; color: var(--fg); }
+    .back { margin-bottom: 2rem; display: inline-block; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+    .sdk-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-right: 0.5rem;
+    }
+    .sdk-js { background: var(--yellow); color: #000; }
+    .sdk-py { background: var(--accent); color: #fff; }
+    .sdk-go { background: #00ADD8; color: #fff; }
+    .sdk-rust { background: var(--orange); color: #fff; }
+    .sdk-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .sdk-name {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    .note {
+      background: rgba(59, 130, 246, 0.1);
+      border-left: 3px solid var(--accent);
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .note p { margin: 0; }
+    .toc {
+      background: var(--code-bg);
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+    }
+    .toc ul { list-style: none; margin: 0.5rem 0; padding-left: 1rem; }
+    .toc li { margin: 0.25rem 0; }
+    .toc a { color: var(--muted); }
+    .toc a:hover { color: var(--accent); }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--fg); font-weight: 600; }
+    td { color: var(--muted); }
+    td code { background: var(--code-bg); padding: 0.2rem 0.4rem; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <a href="/" class="back">← Back to FlagLite</a>
+  
+  <h1>SDK Examples</h1>
+  <p class="lead">Integrate FlagLite into your application with our official SDKs.</p>
+  
+  <nav class="toc">
+    <strong>Available SDKs</strong>
+    <ul>
+      <li><a href="#javascript">JavaScript / TypeScript</a></li>
+      <li><a href="#python">Python</a></li>
+      <li><a href="#go">Go</a></li>
+      <li><a href="#rust">Rust</a></li>
+    </ul>
+  </nav>
+  
+  <div class="note">
+    <p><strong>Setup:</strong> Before using any SDK, set your API key as an environment variable: <code>export FLAGLITE_API_KEY=flg_your_api_key</code></p>
+  </div>
+  
+  <hr>
+  
+  <!-- JavaScript SDK -->
+  <h2 id="javascript">
+    <div class="sdk-header">
+      <span class="sdk-badge sdk-js">JS</span>
+      <span class="sdk-name">JavaScript / TypeScript</span>
+    </div>
+  </h2>
+  
+  <h3>Installation</h3>
+  <Code code="npm install flaglite" lang="bash" theme="github-dark" />
+  <p>Or with other package managers:</p>
+  <Code code={`# yarn
+yarn add flaglite
+
+# pnpm
+pnpm add flaglite`} lang="bash" theme="github-dark" />
+  
+  <h3>Basic Usage</h3>
+  <Code code={`import { FlagLite } from 'flaglite';
+
+// Initialize with API key from environment
+const flags = new FlagLite();
+
+// Or pass the API key directly
+const flags = new FlagLite({
+  apiKey: 'flg_your_api_key',
+});`} lang="javascript" theme="github-dark" />
+  
+  <h3>Checking if a Flag is Enabled</h3>
+  <Code code={`import { FlagLite } from 'flaglite';
+
+const flags = new FlagLite();
+
+async function main() {
+  // Check if a boolean flag is enabled
+  const isEnabled = await flags.enabled('new-checkout');
+  
+  if (isEnabled) {
+    console.log('New checkout is enabled!');
+    // Show new checkout flow
+  } else {
+    console.log('Using classic checkout');
+    // Show classic checkout flow
+  }
+}
+
+main();`} lang="javascript" theme="github-dark" />
+  
+  <h3>Getting Flag Values</h3>
+  <Code code={`import { FlagLite } from 'flaglite';
+
+const flags = new FlagLite();
+
+async function main() {
+  // Get a string value with default fallback
+  const theme = await flags.getValue('app-theme', 'light');
+  console.log(\`Current theme: \${theme}\`);
+  
+  // Get a number value
+  const maxItems = await flags.getValue('max-cart-items', 10);
+  console.log(\`Max cart items: \${maxItems}\`);
+  
+  // Get a JSON value
+  const config = await flags.getValue('feature-config', { version: 1 });
+  console.log('Config:', config);
+}
+
+main();`} lang="javascript" theme="github-dark" />
+  
+  <h3>TypeScript Support</h3>
+  <Code code={`import { FlagLite } from 'flaglite';
+
+interface FeatureConfig {
+  version: number;
+  enableBeta: boolean;
+  maxUsers: number;
+}
+
+const flags = new FlagLite();
+
+async function main() {
+  // Type-safe flag values
+  const config = await flags.getValue<FeatureConfig>('feature-config', {
+    version: 1,
+    enableBeta: false,
+    maxUsers: 100,
+  });
+  
+  console.log(\`Version: \${config.version}\`);
+  console.log(\`Beta enabled: \${config.enableBeta}\`);
+}
+
+main();`} lang="typescript" theme="github-dark" />
+  
+  <hr>
+  
+  <!-- Python SDK -->
+  <h2 id="python">
+    <div class="sdk-header">
+      <span class="sdk-badge sdk-py">PY</span>
+      <span class="sdk-name">Python</span>
+    </div>
+  </h2>
+  
+  <h3>Installation</h3>
+  <Code code="pip install flaglite" lang="bash" theme="github-dark" />
+  <p>Or with Poetry:</p>
+  <Code code="poetry add flaglite" lang="bash" theme="github-dark" />
+  
+  <h3>Basic Usage</h3>
+  <Code code={`from flaglite import FlagLite
+
+# Initialize with API key from environment
+flags = FlagLite()
+
+# Or pass the API key directly
+flags = FlagLite(api_key="flg_your_api_key")`} lang="python" theme="github-dark" />
+  
+  <h3>Checking if a Flag is Enabled</h3>
+  <Code code={`from flaglite import FlagLite
+
+flags = FlagLite()
+
+# Synchronous usage
+if flags.enabled("new-checkout"):
+    print("New checkout is enabled!")
+    # Show new checkout flow
+else:
+    print("Using classic checkout")
+    # Show classic checkout flow`} lang="python" theme="github-dark" />
+  
+  <h4>Async Usage</h4>
+  <Code code={`import asyncio
+from flaglite import AsyncFlagLite
+
+async def main():
+    flags = AsyncFlagLite()
+    
+    # Async check
+    if await flags.enabled("new-checkout"):
+        print("New checkout is enabled!")
+    else:
+        print("Using classic checkout")
+
+asyncio.run(main())`} lang="python" theme="github-dark" />
+  
+  <h3>Getting Flag Values</h3>
+  <Code code={`from flaglite import FlagLite
+
+flags = FlagLite()
+
+# Get a string value with default fallback
+theme = flags.get_value("app-theme", default="light")
+print(f"Current theme: {theme}")
+
+# Get a number value
+max_items = flags.get_value("max-cart-items", default=10)
+print(f"Max cart items: {max_items}")
+
+# Get a dictionary value
+config = flags.get_value("feature-config", default={"version": 1})
+print(f"Config: {config}")`} lang="python" theme="github-dark" />
+  
+  <h3>Context Manager</h3>
+  <Code code={`from flaglite import FlagLite
+
+# Use as context manager for automatic cleanup
+with FlagLite() as flags:
+    if flags.enabled("premium-feature"):
+        print("Premium feature enabled!")
+    
+    theme = flags.get_value("theme", default="dark")
+    print(f"Theme: {theme}")`} lang="python" theme="github-dark" />
+  
+  <hr>
+  
+  <!-- Go SDK -->
+  <h2 id="go">
+    <div class="sdk-header">
+      <span class="sdk-badge sdk-go">GO</span>
+      <span class="sdk-name">Go</span>
+    </div>
+  </h2>
+  
+  <h3>Installation</h3>
+  <Code code="go get github.com/faiscadev/flaglite-go" lang="bash" theme="github-dark" />
+  
+  <h3>Basic Usage</h3>
+  <Code code={`package main
+
+import (
+    "fmt"
+    "os"
+    
+    flaglite "github.com/faiscadev/flaglite-go"
+)
+
+func main() {
+    // Initialize with API key from environment
+    client := flaglite.New()
+    
+    // Or pass the API key directly
+    client := flaglite.NewWithKey("flg_your_api_key")
+}`} lang="go" theme="github-dark" />
+  
+  <h3>Checking if a Flag is Enabled</h3>
+  <Code code={`package main
+
+import (
+    "fmt"
+    "log"
+    
+    flaglite "github.com/faiscadev/flaglite-go"
+)
+
+func main() {
+    client := flaglite.New()
+    
+    // Check if a boolean flag is enabled
+    enabled, err := client.Enabled("new-checkout")
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    if enabled {
+        fmt.Println("New checkout is enabled!")
+        // Show new checkout flow
+    } else {
+        fmt.Println("Using classic checkout")
+        // Show classic checkout flow
+    }
+}`} lang="go" theme="github-dark" />
+  
+  <h3>Getting Flag Values</h3>
+  <Code code={`package main
+
+import (
+    "fmt"
+    "log"
+    
+    flaglite "github.com/faiscadev/flaglite-go"
+)
+
+func main() {
+    client := flaglite.New()
+    
+    // Get a string value with default fallback
+    theme, err := client.GetString("app-theme", "light")
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Current theme: %s\\n", theme)
+    
+    // Get an integer value
+    maxItems, err := client.GetInt("max-cart-items", 10)
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Max cart items: %d\\n", maxItems)
+    
+    // Get a JSON value into a struct
+    type Config struct {
+        Version    int  \`json:"version"\`
+        EnableBeta bool \`json:"enableBeta"\`
+    }
+    
+    var config Config
+    err = client.GetJSON("feature-config", &config, Config{Version: 1})
+    if err != nil {
+        log.Fatal(err)
+    }
+    fmt.Printf("Config version: %d\\n", config.Version)
+}`} lang="go" theme="github-dark" />
+  
+  <h3>With Context</h3>
+  <Code code={`package main
+
+import (
+    "context"
+    "fmt"
+    "log"
+    "time"
+    
+    flaglite "github.com/faiscadev/flaglite-go"
+)
+
+func main() {
+    client := flaglite.New()
+    
+    // Use with context for timeout control
+    ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+    defer cancel()
+    
+    enabled, err := client.EnabledWithContext(ctx, "new-feature")
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    fmt.Printf("Feature enabled: %v\\n", enabled)
+}`} lang="go" theme="github-dark" />
+  
+  <hr>
+  
+  <!-- Rust SDK -->
+  <h2 id="rust">
+    <div class="sdk-header">
+      <span class="sdk-badge sdk-rust">RS</span>
+      <span class="sdk-name">Rust</span>
+    </div>
+  </h2>
+  
+  <h3>Installation</h3>
+  <Code code="cargo add flaglite" lang="bash" theme="github-dark" />
+  <p>Or add to <code>Cargo.toml</code>:</p>
+  <Code code={`[dependencies]
+flaglite = "0.1"`} lang="toml" theme="github-dark" />
+  
+  <h3>Basic Usage</h3>
+  <Code code={`use flaglite::FlagLite;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize with API key from environment
+    let flags = FlagLite::new()?;
+    
+    // Or pass the API key directly
+    let flags = FlagLite::with_key("flg_your_api_key")?;
+    
+    Ok(())
+}`} lang="rust" theme="github-dark" />
+  
+  <h3>Checking if a Flag is Enabled</h3>
+  <Code code={`use flaglite::FlagLite;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let flags = FlagLite::new()?;
+    
+    // Check if a boolean flag is enabled
+    if flags.enabled("new-checkout").await? {
+        println!("New checkout is enabled!");
+        // Show new checkout flow
+    } else {
+        println!("Using classic checkout");
+        // Show classic checkout flow
+    }
+    
+    Ok(())
+}`} lang="rust" theme="github-dark" />
+  
+  <h3>Getting Flag Values</h3>
+  <Code code={`use flaglite::FlagLite;
+use serde::Deserialize;
+
+#[derive(Deserialize, Default)]
+struct Config {
+    version: u32,
+    enable_beta: bool,
+    max_users: u32,
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let flags = FlagLite::new()?;
+    
+    // Get a string value with default fallback
+    let theme: String = flags.get_value("app-theme", "light".to_string()).await?;
+    println!("Current theme: {}", theme);
+    
+    // Get a number value
+    let max_items: i32 = flags.get_value("max-cart-items", 10).await?;
+    println!("Max cart items: {}", max_items);
+    
+    // Get a typed struct value
+    let default_config = Config {
+        version: 1,
+        enable_beta: false,
+        max_users: 100,
+    };
+    let config: Config = flags.get_value("feature-config", default_config).await?;
+    println!("Config version: {}", config.version);
+    
+    Ok(())
+}`} lang="rust" theme="github-dark" />
+  
+  <h3>Error Handling</h3>
+  <Code code={`use flaglite::{FlagLite, FlagLiteError};
+
+#[tokio::main]
+async fn main() {
+    let flags = match FlagLite::new() {
+        Ok(f) => f,
+        Err(FlagLiteError::MissingApiKey) => {
+            eprintln!("Error: FLAGLITE_API_KEY not set");
+            std::process::exit(1);
+        }
+        Err(e) => {
+            eprintln!("Error initializing FlagLite: {}", e);
+            std::process::exit(1);
+        }
+    };
+    
+    // Use Result for flag checks
+    match flags.enabled("new-feature").await {
+        Ok(true) => println!("Feature is enabled"),
+        Ok(false) => println!("Feature is disabled"),
+        Err(FlagLiteError::FlagNotFound(name)) => {
+            println!("Flag '{}' not found, using default", name);
+        }
+        Err(e) => eprintln!("Error checking flag: {}", e),
+    }
+}`} lang="rust" theme="github-dark" />
+  
+  <hr>
+  
+  <h2>SDK Comparison</h2>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>JavaScript</th>
+        <th>Python</th>
+        <th>Go</th>
+        <th>Rust</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Async Support</td>
+        <td>✅ Native</td>
+        <td>✅ AsyncFlagLite</td>
+        <td>✅ WithContext</td>
+        <td>✅ Native</td>
+      </tr>
+      <tr>
+        <td>Type Safety</td>
+        <td>✅ TypeScript</td>
+        <td>✅ Type hints</td>
+        <td>✅ Generics</td>
+        <td>✅ Generics</td>
+      </tr>
+      <tr>
+        <td>Local Caching</td>
+        <td>✅ In-memory</td>
+        <td>✅ In-memory</td>
+        <td>✅ In-memory</td>
+        <td>✅ In-memory</td>
+      </tr>
+      <tr>
+        <td>Env Variable</td>
+        <td><code>FLAGLITE_API_KEY</code></td>
+        <td><code>FLAGLITE_API_KEY</code></td>
+        <td><code>FLAGLITE_API_KEY</code></td>
+        <td><code>FLAGLITE_API_KEY</code></td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <hr>
+  
+  <p>Need help? <a href="https://github.com/faiscadev/flaglite">GitHub</a> · <a href="/docs/api">API Reference</a> · <a href="/docs/quickstart">Quickstart Guide</a></p>
+</body>
+</html>
