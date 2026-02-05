@@ -20,7 +20,11 @@ async fn test_list_projects() {
 
     // Sign up (should create default project)
     let signup_result = user.signup(None, TEST_PASSWORD);
-    assert!(signup_result.is_ok(), "Signup failed: {:?}", signup_result.err());
+    assert!(
+        signup_result.is_ok(),
+        "Signup failed: {:?}",
+        signup_result.err()
+    );
 
     // List projects
     let result = user.projects_list();
@@ -44,7 +48,11 @@ async fn test_create_project() {
 
     // Sign up first
     let signup_result = user.signup(None, TEST_PASSWORD);
-    assert!(signup_result.is_ok(), "Signup failed: {:?}", signup_result.err());
+    assert!(
+        signup_result.is_ok(),
+        "Signup failed: {:?}",
+        signup_result.err()
+    );
 
     // Create a project
     let project_name = unique_project_name();
@@ -67,7 +75,11 @@ async fn test_project_has_default_environments() {
 
     // Sign up first
     let signup_result = user.signup(None, TEST_PASSWORD);
-    assert!(signup_result.is_ok(), "Signup failed: {:?}", signup_result.err());
+    assert!(
+        signup_result.is_ok(),
+        "Signup failed: {:?}",
+        signup_result.err()
+    );
 
     // Get the first project
     let projects = user.projects_list().expect("projects list failed");
@@ -75,7 +87,11 @@ async fn test_project_has_default_environments() {
 
     // Select the project
     let use_result = user.projects_use(&projects[0].id);
-    assert!(use_result.is_ok(), "projects use failed: {:?}", use_result.err());
+    assert!(
+        use_result.is_ok(),
+        "projects use failed: {:?}",
+        use_result.err()
+    );
 
     // List environments
     let result = user.envs_list();
@@ -109,7 +125,11 @@ async fn test_create_multiple_projects() {
 
     // Sign up first
     let signup_result = user.signup(None, TEST_PASSWORD);
-    assert!(signup_result.is_ok(), "Signup failed: {:?}", signup_result.err());
+    assert!(
+        signup_result.is_ok(),
+        "Signup failed: {:?}",
+        signup_result.err()
+    );
 
     // Get initial project count
     let initial_projects = user.projects_list().expect("projects list failed");
@@ -142,23 +162,38 @@ async fn test_projects_use() {
 
     // Sign up first
     let signup_result = user.signup(None, TEST_PASSWORD);
-    assert!(signup_result.is_ok(), "Signup failed: {:?}", signup_result.err());
+    assert!(
+        signup_result.is_ok(),
+        "Signup failed: {:?}",
+        signup_result.err()
+    );
 
     // Create a project
     let project_name = unique_project_name();
     let create_result = user.projects_create(&project_name, None);
-    assert!(create_result.is_ok(), "projects create failed: {:?}", create_result.err());
+    assert!(
+        create_result.is_ok(),
+        "projects create failed: {:?}",
+        create_result.err()
+    );
 
     let project = create_result.unwrap();
 
     // Select the project by ID
     let use_result = user.projects_use(&project.id);
-    assert!(use_result.is_ok(), "projects use failed: {:?}", use_result.err());
+    assert!(
+        use_result.is_ok(),
+        "projects use failed: {:?}",
+        use_result.err()
+    );
 
     // Verify we can now run commands that require a project
     // (like listing flags - even if empty, it should work)
     let flags_result = user.flags_list();
-    assert!(flags_result.is_ok(), "flags list should work after selecting project");
+    assert!(
+        flags_result.is_ok(),
+        "flags list should work after selecting project"
+    );
 }
 
 /// Test projects are isolated between users.
@@ -171,9 +206,11 @@ async fn test_projects_isolated_between_users() {
     // First user creates a project
     let user1 = harness.create_user("user1");
     user1.signup(None, TEST_PASSWORD).expect("Signup failed");
-    
+
     let project_name = unique_project_name();
-    user1.projects_create(&project_name, None).expect("Project create failed");
+    user1
+        .projects_create(&project_name, None)
+        .expect("Project create failed");
 
     let user1_projects = user1.projects_list().expect("Projects list failed");
 
@@ -184,9 +221,7 @@ async fn test_projects_isolated_between_users() {
     let user2_projects = user2.projects_list().expect("Projects list failed");
 
     // User2 should not see user1's custom project
-    let user2_has_user1_project = user2_projects
-        .iter()
-        .any(|p| p.name == project_name);
+    let user2_has_user1_project = user2_projects.iter().any(|p| p.name == project_name);
 
     assert!(
         !user2_has_user1_project,

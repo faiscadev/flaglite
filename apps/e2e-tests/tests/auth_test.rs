@@ -59,11 +59,19 @@ async fn test_whoami_after_signup() {
 
     // Sign up first
     let signup_result = user.signup(Some(&username), TEST_PASSWORD);
-    assert!(signup_result.is_ok(), "Signup failed: {:?}", signup_result.err());
+    assert!(
+        signup_result.is_ok(),
+        "Signup failed: {:?}",
+        signup_result.err()
+    );
 
     // Now check whoami
     let whoami_result = user.whoami();
-    assert!(whoami_result.is_ok(), "Whoami failed: {:?}", whoami_result.err());
+    assert!(
+        whoami_result.is_ok(),
+        "Whoami failed: {:?}",
+        whoami_result.err()
+    );
 
     let info = whoami_result.unwrap();
     assert_eq!(info.username, username);
@@ -81,19 +89,35 @@ async fn test_login_with_correct_password() {
 
     // Sign up first
     let signup_result = user.signup(Some(&username), TEST_PASSWORD);
-    assert!(signup_result.is_ok(), "Signup failed: {:?}", signup_result.err());
+    assert!(
+        signup_result.is_ok(),
+        "Signup failed: {:?}",
+        signup_result.err()
+    );
 
     // Logout
     let logout_result = user.logout();
-    assert!(logout_result.is_ok(), "Logout failed: {:?}", logout_result.err());
+    assert!(
+        logout_result.is_ok(),
+        "Logout failed: {:?}",
+        logout_result.err()
+    );
 
     // Now login
     let login_result = user.login(&username, TEST_PASSWORD);
-    assert!(login_result.is_ok(), "Login failed: {:?}", login_result.err());
+    assert!(
+        login_result.is_ok(),
+        "Login failed: {:?}",
+        login_result.err()
+    );
 
     // Verify we're logged in with whoami
     let whoami_result = user.whoami();
-    assert!(whoami_result.is_ok(), "Whoami failed after login: {:?}", whoami_result.err());
+    assert!(
+        whoami_result.is_ok(),
+        "Whoami failed after login: {:?}",
+        whoami_result.err()
+    );
 }
 
 /// Test login with wrong password is rejected.
@@ -108,14 +132,21 @@ async fn test_login_with_wrong_password() {
 
     // Sign up first
     let signup_result = user.signup(Some(&username), TEST_PASSWORD);
-    assert!(signup_result.is_ok(), "Signup failed: {:?}", signup_result.err());
+    assert!(
+        signup_result.is_ok(),
+        "Signup failed: {:?}",
+        signup_result.err()
+    );
 
     // Logout
     let _ = user.logout();
 
     // Try to login with wrong password
     let login_result = user.login(&username, "wrongpassword");
-    assert!(login_result.is_err(), "Login should have failed with wrong password");
+    assert!(
+        login_result.is_err(),
+        "Login should have failed with wrong password"
+    );
 }
 
 /// Test whoami fails without authentication.
@@ -167,7 +198,11 @@ async fn test_logout_clears_auth() {
 
     // Sign up
     let signup_result = user.signup(None, TEST_PASSWORD);
-    assert!(signup_result.is_ok(), "Signup failed: {:?}", signup_result.err());
+    assert!(
+        signup_result.is_ok(),
+        "Signup failed: {:?}",
+        signup_result.err()
+    );
 
     // Verify logged in
     let whoami_before = user.whoami();
@@ -175,9 +210,16 @@ async fn test_logout_clears_auth() {
 
     // Logout
     let logout_result = user.logout();
-    assert!(logout_result.is_ok(), "Logout failed: {:?}", logout_result.err());
+    assert!(
+        logout_result.is_ok(),
+        "Logout failed: {:?}",
+        logout_result.err()
+    );
 
     // Verify no longer authenticated
     let whoami_after = user.whoami();
-    assert!(whoami_after.is_err(), "Should not be authenticated after logout");
+    assert!(
+        whoami_after.is_err(),
+        "Should not be authenticated after logout"
+    );
 }

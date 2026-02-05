@@ -12,16 +12,17 @@ use common::{unique_flag_key, TestHarness, TEST_PASSWORD};
 /// Helper to setup a user with a selected project.
 async fn setup_user_with_project(harness: &TestHarness, name: &str) -> common::TestUser {
     let user = harness.create_user(name);
-    
+
     // Sign up
     user.signup(None, TEST_PASSWORD).expect("Signup failed");
-    
+
     // Get and select first project
     let projects = user.projects_list().expect("Projects list failed");
     assert!(!projects.is_empty(), "No projects found");
-    
-    user.projects_use(&projects[0].id).expect("Projects use failed");
-    
+
+    user.projects_use(&projects[0].id)
+        .expect("Projects use failed");
+
     user
 }
 
@@ -107,16 +108,40 @@ async fn test_toggle_flag() {
     user.flags_create(&flag_key, Some("Toggle Test Flag"), None, false)
         .expect("flags create failed");
 
+    // Debug: check raw CLI output for get
+    let raw_get = user.exec(&["flags", "get", &flag_key]);
+    eprintln!("DEBUG: flags get stdout:\n{}", raw_get.stdout());
+    eprintln!("DEBUG: flags get stderr:\n{}", raw_get.stderr());
+
     // Get initial state
     let initial = user.flags_get(&flag_key).expect("flags get failed");
     let initial_enabled = initial.enabled;
+    eprintln!("DEBUG: initial_enabled = {}", initial_enabled);
 
     // Toggle the flag
+    let raw_toggle = user.exec(&["flags", "toggle", &flag_key]);
+    eprintln!("DEBUG: flags toggle stdout:\n{}", raw_toggle.stdout());
+    eprintln!("DEBUG: flags toggle stderr:\n{}", raw_toggle.stderr());
+
     let toggle_result = user.flags_toggle(&flag_key);
-    assert!(toggle_result.is_ok(), "flags toggle failed: {:?}", toggle_result.err());
+    assert!(
+        toggle_result.is_ok(),
+        "flags toggle failed: {:?}",
+        toggle_result.err()
+    );
+    eprintln!("DEBUG: toggle returned = {:?}", toggle_result);
+
+    // Debug: check raw CLI output for get after toggle
+    let raw_get_after = user.exec(&["flags", "get", &flag_key]);
+    eprintln!(
+        "DEBUG: flags get after toggle stdout:\n{}",
+        raw_get_after.stdout()
+    );
 
     // Get new state
     let after_toggle = user.flags_get(&flag_key).expect("flags get failed");
+    eprintln!("DEBUG: after_toggle.enabled = {}", after_toggle.enabled);
+
     assert_ne!(
         after_toggle.enabled, initial_enabled,
         "Flag enabled state should have changed after toggle"
@@ -143,7 +168,10 @@ async fn test_get_nonexistent_flag() {
     let user = setup_user_with_project(&harness, "eve").await;
 
     let result = user.flags_get("nonexistent_flag_key");
-    assert!(result.is_err(), "flags get should fail for nonexistent flag");
+    assert!(
+        result.is_err(),
+        "flags get should fail for nonexistent flag"
+    );
 }
 
 /// Test creating flags with different types.
@@ -183,7 +211,7 @@ async fn test_create_flag_types() {
         // Verify flag was created with correct key
         let flag = result.unwrap();
         assert_eq!(flag.key, flag_key);
-        
+
         // Note: API currently returns all flags as "boolean" type
         // regardless of the requested type. This is a known limitation.
         // Once the API supports flag types properly, update this assertion:
@@ -211,7 +239,7 @@ async fn test_create_multiple_flags() {
 
     // List and verify all exist
     let flags = user.flags_list().expect("flags list failed");
-    
+
     for key in &created_keys {
         let found = flags.iter().any(|f| f.key == *key);
         assert!(found, "Flag {} not found in list", key);
@@ -233,21 +261,25 @@ async fn test_flags_isolated_between_projects() {
     let project1_id = projects[0].id.clone();
 
     // Select project 1 and create a flag
-    user.projects_use(&project1_id).expect("Projects use failed");
+    user.projects_use(&project1_id)
+        .expect("Projects use failed");
     let flag_key = unique_flag_key();
     user.flags_create(&flag_key, Some("Project 1 Flag"), None, true)
         .expect("flags create failed");
 
     // Create a new project
-    let project2 = user.projects_create("Second Project", None).expect("Projects create failed");
+    let project2 = user
+        .projects_create("Second Project", None)
+        .expect("Projects create failed");
 
     // Select project 2
-    user.projects_use(&project2.id).expect("Projects use failed");
+    user.projects_use(&project2.id)
+        .expect("Projects use failed");
 
     // List flags in project 2 - should not contain the flag from project 1
     let project2_flags = user.flags_list().expect("flags list failed");
     let has_flag = project2_flags.iter().any(|f| f.key == flag_key);
-    
+
     assert!(
         !has_flag,
         "Flag from project 1 should not be visible in project 2"
@@ -267,7 +299,11 @@ async fn test_create_duplicate_flag_rejected() {
 
     // Create first flag
     let result1 = user.flags_create(&flag_key, Some("First Flag"), None, true);
-    assert!(result1.is_ok(), "First flag create failed: {:?}", result1.err());
+    assert!(
+        result1.is_ok(),
+        "First flag create failed: {:?}",
+        result1.err()
+    );
 
     // Try to create second flag with same key
     let result2 = user.flags_create(&flag_key, Some("Duplicate Flag"), None, false);

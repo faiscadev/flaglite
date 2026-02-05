@@ -107,7 +107,13 @@ impl TestHarness {
             .env("DATABASE_URL", &self.database_url)
             .env("JWT_SECRET", jwt_secret)
             .env("RUST_LOG", "flaglite=debug")
-            .args(["serve", "--port", &self.port.to_string(), "--host", "127.0.0.1"])
+            .args([
+                "serve",
+                "--port",
+                &self.port.to_string(),
+                "--host",
+                "127.0.0.1",
+            ])
             .stdout(Stdio::from(stdout_file))
             .stderr(Stdio::from(stderr_file))
             .spawn()?;
@@ -244,7 +250,7 @@ impl Drop for TestHarness {
                 // Give it a moment to shutdown gracefully
                 std::thread::sleep(Duration::from_millis(100));
             }
-            
+
             // Then force kill if still running
             let _ = server.kill();
             let _ = server.wait();
@@ -316,7 +322,7 @@ impl TestUser {
     /// Returns signup info if successful.
     pub fn signup(&self, username: Option<&str>, password: &str) -> Result<SignupInfo, String> {
         let mut args = vec!["signup", "--password", password];
-        
+
         if let Some(user) = username {
             args.push("--username");
             args.push(user);
@@ -329,7 +335,7 @@ impl TestUser {
         }
 
         let stdout = result.stdout();
-        
+
         // Parse output to extract username and API key
         // Expected output format:
         // ✓ Account created successfully!
@@ -349,8 +355,8 @@ impl TestUser {
             .map(|s| s.trim().to_string())
             .ok_or_else(|| format!("Failed to parse API key from output: {}", stdout))?;
 
-        Ok(SignupInfo { 
-            username: parsed_username, 
+        Ok(SignupInfo {
+            username: parsed_username,
             api_key,
         })
     }
@@ -375,7 +381,7 @@ impl TestUser {
         }
 
         let stdout = result.stdout();
-        
+
         // Parse whoami output
         // Expected format:
         // Logged in as: username
@@ -419,7 +425,7 @@ impl TestUser {
         if result.failed() {
             return Err(format!("Projects list failed: {} {}", stdout, stderr));
         }
-        
+
         // Try to parse as JSON array
         if let Ok(projects) = serde_json::from_str::<Vec<ProjectInfo>>(&stdout) {
             return Ok(projects);
@@ -432,7 +438,7 @@ impl TestUser {
         // xxx | My Project | my-project
         let mut projects = Vec::new();
         let lines: Vec<&str> = stdout.lines().collect();
-        
+
         for line in lines.iter().skip(2) {
             // Skip header and separator
             let parts: Vec<&str> = line.split('|').map(|s| s.trim()).collect();
@@ -449,7 +455,11 @@ impl TestUser {
     }
 
     /// Create a project via CLI.
-    pub fn projects_create(&self, name: &str, description: Option<&str>) -> Result<ProjectInfo, String> {
+    pub fn projects_create(
+        &self,
+        name: &str,
+        description: Option<&str>,
+    ) -> Result<ProjectInfo, String> {
         let mut args = vec!["projects", "create", name];
         if let Some(desc) = description {
             args.push("--description");
@@ -463,7 +473,7 @@ impl TestUser {
         }
 
         let stdout = result.stdout();
-        
+
         // Parse output to extract project info
         // Expected output:
         // ✓ Project created successfully!
@@ -522,7 +532,7 @@ impl TestUser {
         }
 
         let stdout = result.stdout();
-        
+
         // Try to parse as JSON
         if let Ok(flags) = serde_json::from_str::<Vec<FlagInfo>>(&stdout) {
             return Ok(flags);
@@ -531,7 +541,7 @@ impl TestUser {
         // Fallback: parse table output
         let mut flags = Vec::new();
         let lines: Vec<&str> = stdout.lines().collect();
-        
+
         for line in lines.iter().skip(2) {
             let parts: Vec<&str> = line.split('|').map(|s| s.trim()).collect();
             if parts.len() >= 4 {
@@ -539,8 +549,8 @@ impl TestUser {
                     key: parts[0].to_string(),
                     name: parts[1].to_string(),
                     flag_type: parts[2].to_string(),
-                    enabled: parts[3].to_lowercase().contains("true") 
-                        || parts[3].contains("✓") 
+                    enabled: parts[3].to_lowercase().contains("true")
+                        || parts[3].contains("✓")
                         || parts[3].contains("on"),
                 });
             }
@@ -558,17 +568,17 @@ impl TestUser {
         enabled: bool,
     ) -> Result<FlagInfo, String> {
         let mut args = vec!["flags", "create", key];
-        
+
         if let Some(n) = name {
             args.push("--name");
             args.push(n);
         }
-        
+
         if let Some(t) = flag_type {
             args.push("--flag-type");
             args.push(t);
         }
-        
+
         if enabled {
             args.push("--enabled");
         }
@@ -580,7 +590,7 @@ impl TestUser {
         }
 
         let stdout = result.stdout();
-        
+
         // Parse output
         let flag_key = stdout
             .lines()
@@ -620,7 +630,7 @@ impl TestUser {
         }
 
         let stdout = result.stdout();
-        
+
         let flag_key = stdout
             .lines()
             .find(|line| line.contains("Key:"))
@@ -642,12 +652,12 @@ impl TestUser {
             .map(|s| s.trim().to_string())
             .unwrap_or_else(|| "boolean".to_string());
 
-        let enabled = stdout
-            .lines()
-            .any(|line| {
-                (line.contains("Enabled:") || line.contains("Status:")) &&
-                (line.to_lowercase().contains("true") || line.contains("✓") || line.contains("on"))
-            });
+        let enabled = stdout.lines().any(|line| {
+            (line.contains("Enabled:") || line.contains("Status:"))
+                && (line.to_lowercase().contains("true")
+                    || line.contains("✓")
+                    || line.contains("on"))
+        });
 
         Ok(FlagInfo {
             key: flag_key,
@@ -666,7 +676,7 @@ impl TestUser {
         }
 
         let stdout = result.stdout().to_lowercase();
-        
+
         // Determine new state from output
         // Output is like: "Flag 'key' is now enabled in development"
         // or "Flag 'key' is now disabled in development"
@@ -696,7 +706,7 @@ impl TestUser {
         }
 
         let stdout = result.stdout();
-        
+
         // Try JSON parsing
         if let Ok(envs) = serde_json::from_str::<Vec<EnvInfo>>(&stdout) {
             return Ok(envs);
@@ -705,7 +715,7 @@ impl TestUser {
         // Fallback: parse table
         let mut envs = Vec::new();
         let lines: Vec<&str> = stdout.lines().collect();
-        
+
         for line in lines.iter().skip(2) {
             let parts: Vec<&str> = line.split('|').map(|s| s.trim()).collect();
             if parts.len() >= 2 {
@@ -744,7 +754,9 @@ impl CommandResult {
             )
             .into());
         }
-        Ok(String::from_utf8_lossy(&self.output.stdout).trim().to_string())
+        Ok(String::from_utf8_lossy(&self.output.stdout)
+            .trim()
+            .to_string())
     }
 
     /// Check if command succeeded, return error with context.
@@ -763,12 +775,16 @@ impl CommandResult {
 
     /// Get stdout as string.
     pub fn stdout(&self) -> String {
-        String::from_utf8_lossy(&self.output.stdout).trim().to_string()
+        String::from_utf8_lossy(&self.output.stdout)
+            .trim()
+            .to_string()
     }
 
     /// Get stderr as string.
     pub fn stderr(&self) -> String {
-        String::from_utf8_lossy(&self.output.stderr).trim().to_string()
+        String::from_utf8_lossy(&self.output.stderr)
+            .trim()
+            .to_string()
     }
 
     /// Check if the command failed.
@@ -858,9 +874,7 @@ fn get_binary_paths() -> Result<(PathBuf, PathBuf), Box<dyn std::error::Error>> 
     // Get workspace root from CARGO_MANIFEST_DIR
     // The e2e-tests crate is at: workspace/apps/e2e-tests
     // So binaries are at: workspace/target/debug/
-    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR")
-        .map(PathBuf::from)
-        .ok();
+    let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").map(PathBuf::from).ok();
 
     let cwd = std::env::current_dir()?;
 
@@ -878,7 +892,7 @@ fn get_binary_paths() -> Result<(PathBuf, PathBuf), Box<dyn std::error::Error>> 
 
     // From current directory
     base_dirs.push(cwd.clone());
-    
+
     // Also try going up from cwd (useful if cwd is apps/e2e-tests or workspace)
     if let Some(parent) = cwd.parent() {
         base_dirs.push(parent.to_path_buf());
@@ -897,7 +911,7 @@ fn get_binary_paths() -> Result<(PathBuf, PathBuf), Box<dyn std::error::Error>> 
         for (api_rel, cli_rel) in &candidates {
             let api_path = base.join(api_rel);
             let cli_path = base.join(cli_rel);
-            
+
             if api_path.exists() && cli_path.exists() {
                 return Ok((api_path.canonicalize()?, cli_path.canonicalize()?));
             }

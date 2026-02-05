@@ -36,7 +36,8 @@ pub async fn signup(
         };
 
         let password: String = Password::new().with_prompt("Password").interact()?;
-        let password_confirm: String = Password::new().with_prompt("Confirm password").interact()?;
+        let password_confirm: String =
+            Password::new().with_prompt("Confirm password").interact()?;
 
         if password != password_confirm {
             return Err(anyhow::anyhow!("Passwords do not match"));
