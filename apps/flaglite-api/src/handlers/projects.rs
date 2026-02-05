@@ -1,3 +1,6 @@
+//! Legacy project handlers - kept for reference, may be removed later.
+#![allow(dead_code)]
+
 use axum::{
     extract::{Path, State},
     Json,

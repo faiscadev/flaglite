@@ -173,7 +173,7 @@ impl FlagLiteClient {
 
     /// List all projects
     pub async fn list_projects(&self) -> Result<Vec<Project>, FlagLiteError> {
-        let url = format!("{}/projects", self.base_url);
+        let url = format!("{}/v1/projects", self.base_url);
         let auth = self.auth_header()?;
 
         let resp = self
@@ -207,7 +207,7 @@ impl FlagLiteClient {
         &self,
         req: CreateProjectRequest,
     ) -> Result<Project, FlagLiteError> {
-        let url = format!("{}/projects", self.base_url);
+        let url = format!("{}/v1/projects", self.base_url);
         let auth = self.auth_header()?;
 
         let resp = self
@@ -239,7 +239,7 @@ impl FlagLiteClient {
         &self,
         project_id: &str,
     ) -> Result<Vec<Environment>, FlagLiteError> {
-        let url = format!("{}/projects/{}/environments", self.base_url, project_id);
+        let url = format!("{}/v1/projects/{}/environments", self.base_url, project_id);
         let auth = self.auth_header()?;
 
         let resp = self
@@ -275,7 +275,7 @@ impl FlagLiteClient {
         project_id: &str,
         environment: Option<&str>,
     ) -> Result<Vec<FlagWithState>, FlagLiteError> {
-        let mut url = format!("{}/projects/{}/flags", self.base_url, project_id);
+        let mut url = format!("{}/v1/projects/{}/flags", self.base_url, project_id);
         if let Some(env) = environment {
             url = format!("{url}?environment={env}");
         }
@@ -313,7 +313,7 @@ impl FlagLiteClient {
         key: &str,
         environment: Option<&str>,
     ) -> Result<FlagWithState, FlagLiteError> {
-        let mut url = format!("{}/projects/{}/flags/{}", self.base_url, project_id, key);
+        let mut url = format!("{}/v1/projects/{}/flags/{}", self.base_url, project_id, key);
         if let Some(env) = environment {
             url = format!("{url}?environment={env}");
         }
@@ -350,7 +350,7 @@ impl FlagLiteClient {
         project_id: &str,
         req: CreateFlagRequest,
     ) -> Result<Flag, FlagLiteError> {
-        let url = format!("{}/projects/{}/flags", self.base_url, project_id);
+        let url = format!("{}/v1/projects/{}/flags", self.base_url, project_id);
         let auth = self.auth_header()?;
 
         let resp = self
@@ -383,7 +383,7 @@ impl FlagLiteClient {
         environment: &str,
     ) -> Result<FlagWithState, FlagLiteError> {
         let url = format!(
-            "{}/projects/{}/flags/{}/toggle?environment={}",
+            "{}/v1/projects/{}/flags/{}/toggle?environment={}",
             self.base_url, project_id, key, environment
         );
         let auth = self.auth_header()?;
@@ -415,7 +415,7 @@ impl FlagLiteClient {
 
     /// Delete a flag
     pub async fn delete_flag(&self, project_id: &str, key: &str) -> Result<(), FlagLiteError> {
-        let url = format!("{}/projects/{}/flags/{}", self.base_url, project_id, key);
+        let url = format!("{}/v1/projects/{}/flags/{}", self.base_url, project_id, key);
         let auth = self.auth_header()?;
 
         let resp = self

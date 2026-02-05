@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use std::collections::HashMap;
 use std::sync::Arc;
+use uuid::Uuid;
 
 use crate::storage::Storage;
 
@@ -99,19 +100,24 @@ pub struct Project {
 
 #[derive(Debug, Serialize)]
 pub struct ProjectResponse {
-    pub id: String,
+    pub id: Uuid,
     pub name: String,
-    pub api_key: String,
+    pub description: Option<String>,
+    pub slug: String,
     pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 impl From<Project> for ProjectResponse {
     fn from(p: Project) -> Self {
+        let slug = p.name.to_lowercase().replace(' ', "-");
         ProjectResponse {
-            id: p.id,
+            id: Uuid::parse_str(&p.id).unwrap_or_else(|_| Uuid::nil()),
             name: p.name,
-            api_key: p.api_key,
+            description: None,
+            slug,
             created_at: p.created_at,
+            updated_at: p.created_at, // API doesn't track updated_at separately
         }
     }
 }
