@@ -137,7 +137,7 @@ curl http://localhost:8080/health
 
 ## Helm Values Reference
 
-Complete reference for `helm/flaglite/values.yaml`.
+Complete reference for `charts/flaglite/values.yaml`.
 
 ### Core Settings
 

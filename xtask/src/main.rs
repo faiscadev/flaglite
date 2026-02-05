@@ -72,7 +72,8 @@ fn cmd_check() -> Result<()> {
     println!("✓ Clippy OK\n");
 
     println!("🧪 Running tests...");
-    run_cargo(&["test", "--workspace"])?;
+    // Exclude e2e-tests (they require a running server)
+    run_cargo(&["test", "--workspace", "--exclude", "e2e-tests"])?;
     println!("✓ Tests OK\n");
 
     println!("✅ All checks passed!");

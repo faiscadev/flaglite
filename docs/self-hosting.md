@@ -7,8 +7,7 @@ This guide covers everything you need to deploy FlagLite in your own infrastruct
 - [Prerequisites](#prerequisites)
 - [Option 1: Docker Compose](#option-1-docker-compose-recommended) — Easiest, production-ready
 - [Option 2: Kubernetes with Helm](#option-2-kubernetes-with-helm) — For existing K8s clusters
-- [Option 3: Manual Kubernetes](#option-3-manual-kubernetes) — Full control with raw manifests
-- [Option 4: Single Binary](#option-4-single-binary) — Zero dependencies
+- [Option 3: Single Binary](#option-3-single-binary) — Zero dependencies
 - [Production Checklist](#production-checklist)
 
 ---
@@ -122,7 +121,7 @@ kubectl create secret generic flaglite-jwt \
   --from-literal=jwt-secret="$(openssl rand -hex 32)"
 
 # Install with bundled PostgreSQL
-helm install flaglite ./helm/flaglite \
+helm install flaglite ./charts/flaglite \
   --namespace flaglite \
   --set postgresql.enabled=true \
   --set jwt.existingSecret=flaglite-jwt \
@@ -163,7 +162,7 @@ kubectl create secret generic flaglite-jwt \
   --from-literal=jwt-secret="$(openssl rand -hex 32)"
 
 # Install
-helm install flaglite ./helm/flaglite \
+helm install flaglite ./charts/flaglite \
   --namespace flaglite \
   --set database.type=postgres \
   --set database.postgres.existingSecret=flaglite-db \
@@ -176,7 +175,7 @@ helm install flaglite ./helm/flaglite \
 For development or testing:
 
 ```bash
-helm install flaglite ./helm/flaglite \
+helm install flaglite ./charts/flaglite \
   --namespace flaglite \
   --set database.type=sqlite \
   --set replicaCount=1 \
@@ -236,7 +235,7 @@ autoscaling:
 
 Then install:
 ```bash
-helm install flaglite ./helm/flaglite \
+helm install flaglite ./charts/flaglite \
   --namespace flaglite \
   -f my-values.yaml
 ```
@@ -244,7 +243,7 @@ helm install flaglite ./helm/flaglite \
 ### Upgrading
 
 ```bash
-helm upgrade flaglite ./helm/flaglite \
+helm upgrade flaglite ./charts/flaglite \
   --namespace flaglite \
   -f my-values.yaml
 ```
@@ -260,91 +259,7 @@ kubectl delete pvc -l app.kubernetes.io/name=flaglite -n flaglite
 
 ---
 
-## Option 3: Manual Kubernetes
-
-For full control without Helm.
-
-### Quick Start
-
-```bash
-# Clone the repo
-git clone https://github.com/faiscadev/flaglite.git
-cd flaglite/k8s
-
-# Create namespace
-kubectl create namespace flaglite
-
-# Create secrets
-kubectl create secret generic flaglite-secrets \
-  --namespace flaglite \
-  --from-literal=database-url='sqlite:/data/flaglite.db' \
-  --from-literal=jwt-secret="$(openssl rand -hex 32)"
-
-# Apply manifests
-kubectl apply -f deployment.yaml -n flaglite
-```
-
-**Expected output:**
-```
-deployment.apps/flaglite-api created
-service/flaglite-api created
-ingress.networking.k8s.io/flaglite-api created
-persistentvolumeclaim/flaglite-data created
-```
-
-### Customizing the Manifests
-
-Edit `deployment.yaml` to:
-
-1. **Change the ingress hostname:**
-   ```yaml
-   spec:
-     rules:
-       - host: flags.your-domain.com  # Change this
-   ```
-
-2. **Use PostgreSQL instead of SQLite:**
-   ```bash
-   kubectl create secret generic flaglite-secrets \
-     --namespace flaglite \
-     --from-literal=database-url='postgres://user:pass@db-host:5432/flaglite' \
-     --from-literal=jwt-secret="$(openssl rand -hex 32)"
-   ```
-
-3. **Scale replicas** (PostgreSQL only):
-   ```yaml
-   spec:
-     replicas: 3  # Requires PostgreSQL
-   ```
-
-4. **Adjust resources:**
-   ```yaml
-   resources:
-     requests:
-       memory: "128Mi"
-       cpu: "200m"
-     limits:
-       memory: "512Mi"
-       cpu: "1000m"
-   ```
-
-### Verifying Deployment
-
-```bash
-# Check pods
-kubectl get pods -n flaglite -l app=flaglite
-
-# View logs
-kubectl logs -n flaglite -l app=flaglite -f
-
-# Test health endpoint
-kubectl port-forward -n flaglite svc/flaglite-api 8080:80
-curl http://localhost:8080/health
-```
-
----
-
-## Option 4: Single Binary
+## Option 3: Single Binary
 
 Zero dependencies. Perfect for VMs or bare metal.
 
@@ -494,7 +409,7 @@ monitoring:
 
 Or via CLI:
 ```bash
-helm install flaglite ./helm/flaglite \
+helm install flaglite ./charts/flaglite \
   --namespace flaglite \
   --set monitoring.enabled=true \
   --set monitoring.serviceMonitor.labels.release=prometheus

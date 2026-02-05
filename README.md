@@ -153,11 +153,21 @@ Full CLI reference: [docs.flaglite.dev/cli](https://docs.flaglite.dev/cli)
 
 ```
 flaglite/
-├── api/        # Rust API server (Axum + SQLx)
-├── cli/        # Rust CLI (clap)
-├── shared/     # Shared types and utilities
-├── dashboard/  # React dashboard (Vite + TypeScript)
-└── openapi/    # OpenAPI spec + docs
+├── apps/
+│   ├── flaglite-api/       # API server (Axum + SQLx)
+│   ├── flaglite-cli/       # CLI binary (clap)
+│   └── e2e-tests/          # Integration tests
+├── crates/
+│   ├── flaglite-core/      # Core types, traits, errors
+│   └── flaglite-client/    # HTTP client library
+├── charts/                 # Helm charts
+├── dashboard/              # React dashboard (Vite + TypeScript)
+├── docker/                 # Dockerfiles
+├── docs/                   # Documentation
+├── openapi/                # OpenAPI spec
+├── scripts/                # Helper scripts
+├── website/                # Marketing site (Astro)
+└── xtask/                  # Dev tooling (cargo xtask)
 ```
 
 ---
@@ -169,17 +179,35 @@ flaglite/
 git clone https://github.com/faiscadev/flaglite.git
 cd flaglite
 
-# Build API + CLI
-cargo build --release
+# Build all crates
+cargo build --workspace --release
 
 # Binaries at:
-# - target/release/flaglite-api (6.9MB)
-# - target/release/flaglite (5.5MB CLI)
+# - target/release/flaglite-api
+# - target/release/flaglite-cli
 
 # Build dashboard
 cd dashboard
 npm install
 npm run build
+```
+
+---
+
+## Development
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and workflow.
+
+Quick start:
+```bash
+# Run all quality checks
+cargo xtask check
+
+# Run tests
+cargo test --workspace
+
+# Format code
+cargo fmt --all
 ```
 
 ---
