@@ -13,7 +13,7 @@ members = [
 version = "0.1.0"
 edition = "2021"
 authors = ["Faísca <team@faisca.dev>"]
-license = "MIT"
+license = "AGPL-3.0"
 repository = "https://github.com/faisca/flaglite"
 
 [workspace.dependencies]

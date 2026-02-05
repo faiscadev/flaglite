@@ -69,7 +69,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: Build
-        run: cargo build --release
+        run: cargo build --workspace --release
 
       - name: Test
-        run: cargo test
+        run: cargo test --workspace --exclude e2e-tests
