@@ -1,0 +1,85 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: flaglite
+          POSTGRES_PASSWORD: flaglite
+          POSTGRES_DB: flaglite
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://flaglite:flaglite@localhost:5432/flaglite
+      JWT_SECRET: test-secret-for-ci-only
+      RUST_LOG: info
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Build API
+        run: cargo build --release -p flaglite-api
+
+      - name: Start API server
+        run: |
+          ./target/release/flaglite-api serve --port 3456 &
+          echo "Waiting for API to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:3456/health > /dev/null; then
+              echo "API is ready!"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Run E2E tests
+        run: |
+          chmod +x ./e2e/test-api.sh
+          FLAGLITE_API_URL=http://localhost:3456 VERBOSE=true ./e2e/test-api.sh
+
+  e2e-production:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [e2e]
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run E2E tests against production
+        run: |
+          chmod +x ./e2e/test-api.sh
+          FLAGLITE_API_URL=https://api.flaglite.dev VERBOSE=true ./e2e/test-api.sh
+        continue-on-error: true  # Don't fail the build, just report
