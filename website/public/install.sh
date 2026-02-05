@@ -114,14 +114,17 @@ install() {
     info "Verifying checksum..."
     if curl -fsSL -o "$TMP_DIR/SHA256SUMS" "$CHECKSUM_URL" 2>/dev/null; then
         cd "$TMP_DIR"
-        if command -v sha256sum > /dev/null 2>&1; then
-            if echo "$(grep "$BINARY_FILENAME" SHA256SUMS)" | sha256sum -c - > /dev/null 2>&1; then
+        EXPECTED=$(grep "$BINARY_FILENAME" SHA256SUMS | awk '{print $1}')
+        if [ -z "$EXPECTED" ]; then
+            warn "Could not find checksum for $BINARY_FILENAME"
+        elif command -v sha256sum > /dev/null 2>&1; then
+            ACTUAL=$(sha256sum "$BINARY_NAME" | awk '{print $1}')
+            if [ "$EXPECTED" = "$ACTUAL" ]; then
                 success "Checksum verified"
             else
                 warn "Checksum verification failed"
             fi
         elif command -v shasum > /dev/null 2>&1; then
-            EXPECTED=$(grep "$BINARY_FILENAME" SHA256SUMS | awk '{print $1}')
             ACTUAL=$(shasum -a 256 "$BINARY_NAME" | awk '{print $1}')
             if [ "$EXPECTED" = "$ACTUAL" ]; then
                 success "Checksum verified"
