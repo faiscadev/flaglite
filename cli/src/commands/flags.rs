@@ -6,13 +6,28 @@ use anyhow::Result;
 use dialoguer::Confirm;
 use flaglite_shared::{CreateFlagRequest, FlagLiteClient, FlagType};
 
+/// Create an authenticated client from config
+fn client_from_config(config: &Config) -> Result<FlagLiteClient> {
+    let client = FlagLiteClient::new(&config.api_url);
+
+    // Prefer API key over token
+    if let Some(api_key) = &config.api_key {
+        Ok(client.with_api_key(api_key))
+    } else if let Some(token) = &config.token {
+        Ok(client.with_token(token))
+    } else {
+        Err(anyhow::anyhow!(
+            "Not logged in. Run `flaglite signup` or `flaglite login`"
+        ))
+    }
+}
+
 /// List all flags in the current project
 pub async fn list(config: &Config, output: &Output) -> Result<()> {
-    let token = config.require_token()?;
+    let client = client_from_config(config)?;
     let project_id = config.require_project()?;
     let env = config.get_environment();
 
-    let client = FlagLiteClient::new(&config.api_url).with_token(token);
     let flags = client.list_flags(project_id, Some(env)).await?;
 
     if !output.is_json() {
@@ -34,7 +49,7 @@ pub async fn create(
     flag_type: String,
     enabled: bool,
 ) -> Result<()> {
-    let token = config.require_token()?;
+    let client = client_from_config(config)?;
     let project_id = config.require_project()?;
 
     // Parse flag type
@@ -67,8 +82,6 @@ pub async fn create(
             .join(" ")
     });
 
-    let client = FlagLiteClient::new(&config.api_url).with_token(token);
-
     let req = CreateFlagRequest {
         key,
         name,
@@ -86,11 +99,10 @@ pub async fn create(
 
 /// Get flag details
 pub async fn get(config: &Config, output: &Output, key: String) -> Result<()> {
-    let token = config.require_token()?;
+    let client = client_from_config(config)?;
     let project_id = config.require_project()?;
     let env = config.get_environment();
 
-    let client = FlagLiteClient::new(&config.api_url).with_token(token);
     let flag = client.get_flag(project_id, &key, Some(env)).await?;
 
     output.print_flag(&flag)?;
@@ -100,11 +112,10 @@ pub async fn get(config: &Config, output: &Output, key: String) -> Result<()> {
 
 /// Toggle a flag
 pub async fn toggle(config: &Config, output: &Output, key: String) -> Result<()> {
-    let token = config.require_token()?;
+    let client = client_from_config(config)?;
     let project_id = config.require_project()?;
     let env = config.get_environment();
 
-    let client = FlagLiteClient::new(&config.api_url).with_token(token);
     let flag = client.toggle_flag(project_id, &key, env).await?;
 
     let status = if flag.enabled { "enabled" } else { "disabled" };
@@ -115,7 +126,7 @@ pub async fn toggle(config: &Config, output: &Output, key: String) -> Result<()>
 
 /// Delete a flag
 pub async fn delete(config: &Config, output: &Output, key: String, yes: bool) -> Result<()> {
-    let token = config.require_token()?;
+    let client = client_from_config(config)?;
     let project_id = config.require_project()?;
 
     // Confirm deletion unless --yes flag is provided
@@ -134,7 +145,6 @@ pub async fn delete(config: &Config, output: &Output, key: String, yes: bool) ->
         }
     }
 
-    let client = FlagLiteClient::new(&config.api_url).with_token(token);
     client.delete_flag(project_id, &key).await?;
 
     output.success(&format!("Flag '{}' deleted.", key));

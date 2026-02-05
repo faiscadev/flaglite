@@ -7,11 +7,10 @@ use uuid::Uuid;
 /// User information
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
-    pub id: Uuid,
-    pub email: String,
-    pub name: String,
+    pub id: String,
+    pub username: String,
     #[serde(default)]
-    pub avatar_url: Option<String>,
+    pub email: Option<String>,
     pub created_at: DateTime<Utc>,
 }
 
@@ -120,18 +119,45 @@ fn default_flag_type() -> FlagType {
     FlagType::Boolean
 }
 
-/// Authentication response
+/// Signup request
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AuthResponse {
-    pub token: String,
+pub struct SignupRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub username: Option<String>,
+    pub password: String,
+}
+
+/// API key info (only shown on creation)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ApiKeyCreated {
+    pub id: String,
+    pub key: String, // Full key - only shown once!
+    pub key_prefix: String,
+    #[serde(default)]
+    pub name: Option<String>,
+    pub created_at: DateTime<Utc>,
+}
+
+/// Signup response
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SignupResponse {
     pub user: User,
+    pub api_key: ApiKeyCreated,
+    pub token: String,
 }
 
 /// Login request
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LoginRequest {
-    pub email: String,
+    pub username: String,
     pub password: String,
+}
+
+/// Authentication response (login)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AuthResponse {
+    pub token: String,
+    pub user: User,
 }
 
 /// API error response

@@ -6,7 +6,7 @@ use colored::*;
 use flaglite_shared::{Environment, Flag, FlagWithState, Project, User};
 use serde::Serialize;
 use std::str::FromStr;
-use tabled::{Table, Tabled, settings::Style};
+use tabled::{settings::Style, Table, Tabled};
 
 /// Output format
 #[derive(Debug, Clone, Copy, Default)]
@@ -91,9 +91,11 @@ impl Output {
         }
 
         println!("{}", "User Information".bold().underline());
-        println!("  {} {}", "Email:".dimmed(), user.email.cyan());
-        println!("  {} {}", "Name:".dimmed(), user.name);
-        println!("  {} {}", "ID:".dimmed(), user.id.to_string().dimmed());
+        println!("  {} {}", "Username:".dimmed(), user.username.cyan());
+        if let Some(email) = &user.email {
+            println!("  {} {}", "Email:".dimmed(), email);
+        }
+        println!("  {} {}", "ID:".dimmed(), user.id.dimmed());
         println!(
             "  {} {}",
             "Member since:".dimmed(),
@@ -133,7 +135,11 @@ impl Output {
             .map(|p| {
                 let is_current = current.is_some_and(|c| c == p.id.to_string() || c == p.slug);
                 ProjectRow {
-                    current: if is_current { "→".green().to_string() } else { "".to_string() },
+                    current: if is_current {
+                        "→".green().to_string()
+                    } else {
+                        "".to_string()
+                    },
                     id: p.id.to_string()[..8].to_string(),
                     name: p.name.clone(),
                     slug: p.slug.clone(),
@@ -193,7 +199,11 @@ impl Output {
             .map(|e| {
                 let is_current = current.is_some_and(|c| c == e.name || c == e.slug);
                 EnvRow {
-                    current: if is_current { "→".green().to_string() } else { "".to_string() },
+                    current: if is_current {
+                        "→".green().to_string()
+                    } else {
+                        "".to_string()
+                    },
                     name: e.name.clone(),
                     slug: e.slug.clone(),
                     production: if e.is_production {
@@ -321,12 +331,13 @@ impl Output {
     /// Print config
     pub fn print_config(&self, config: &Config) -> Result<()> {
         if self.is_json() {
-            // Don't expose token in JSON output
+            // Don't expose sensitive info in JSON output
             let safe = serde_json::json!({
                 "api_url": config.api_url,
                 "project_id": config.project_id,
                 "environment": config.environment,
                 "authenticated": config.is_authenticated(),
+                "username": config.username,
             });
             return self.json(&safe);
         }
@@ -342,6 +353,9 @@ impl Output {
                 "No".red()
             }
         );
+        if let Some(username) = &config.username {
+            println!("  {} {}", "Username:".dimmed(), username);
+        }
         println!(
             "  {} {}",
             "Project:".dimmed(),
@@ -357,6 +371,11 @@ impl Output {
             "  {} {}",
             "Config file:".dimmed(),
             Config::config_path()?.display()
+        );
+        println!(
+            "  {} {}",
+            "Credentials:".dimmed(),
+            Config::credentials_path()?.display()
         );
 
         Ok(())

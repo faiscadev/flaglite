@@ -2,9 +2,9 @@
 //!
 //! A command-line tool for managing feature flags with FlagLite.
 
+mod commands;
 mod config;
 mod output;
-mod commands;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
@@ -18,7 +18,7 @@ use commands::{auth, envs, flags, projects};
     about = "Feature flag management CLI",
     long_about = "FlagLite CLI - Manage feature flags from your terminal.\n\n\
                   Get started:\n  \
-                  flaglite login\n  \
+                  flaglite signup\n  \
                   flaglite projects list\n  \
                   flaglite flags list"
 )]
@@ -30,6 +30,10 @@ struct Cli {
     /// API base URL (overrides config)
     #[arg(long, global = true, env = "FLAGLITE_API_URL")]
     api_url: Option<String>,
+
+    /// API key for authentication
+    #[arg(long, global = true, env = "FLAGLITE_API_KEY")]
+    api_key: Option<String>,
 
     /// Project ID (overrides config)
     #[arg(long, short = 'p', global = true, env = "FLAGLITE_PROJECT")]
@@ -45,6 +49,9 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Create a new FlagLite account
+    Signup,
+
     /// Authenticate with FlagLite
     Login,
 
@@ -157,6 +164,9 @@ async fn main() -> Result<()> {
     if let Some(url) = cli.api_url {
         config.api_url = url;
     }
+    if let Some(key) = cli.api_key {
+        config.api_key = Some(key);
+    }
     if let Some(project) = cli.project {
         config.project_id = Some(project);
     }
@@ -165,6 +175,7 @@ async fn main() -> Result<()> {
     }
 
     let result = match cli.command {
+        Commands::Signup => auth::signup(&mut config, &output).await,
         Commands::Login => auth::login(&mut config, &output).await,
         Commands::Logout => auth::logout(&mut config, &output).await,
         Commands::Whoami => auth::whoami(&config, &output).await,

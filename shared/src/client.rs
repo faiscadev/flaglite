@@ -9,6 +9,7 @@ pub struct FlagLiteClient {
     client: Client,
     base_url: String,
     token: Option<String>,
+    api_key: Option<String>,
 }
 
 impl FlagLiteClient {
@@ -18,12 +19,19 @@ impl FlagLiteClient {
             client: Client::new(),
             base_url: base_url.into().trim_end_matches('/').to_string(),
             token: None,
+            api_key: None,
         }
     }
 
-    /// Set the authentication token
+    /// Set the authentication token (JWT)
     pub fn with_token(mut self, token: impl Into<String>) -> Self {
         self.token = Some(token.into());
+        self
+    }
+
+    /// Set the API key for authentication
+    pub fn with_api_key(mut self, api_key: impl Into<String>) -> Self {
+        self.api_key = Some(api_key.into());
         self
     }
 
@@ -33,6 +41,10 @@ impl FlagLiteClient {
     }
 
     fn auth_header(&self) -> Result<String, FlagLiteError> {
+        // Prefer API key over token
+        if let Some(key) = &self.api_key {
+            return Ok(format!("Bearer {}", key));
+        }
         self.token
             .as_ref()
             .map(|t| format!("Bearer {}", t))
@@ -63,11 +75,15 @@ impl FlagLiteClient {
 
     // === Auth ===
 
-    /// Login with email and password
-    pub async fn login(&self, email: &str, password: &str) -> Result<AuthResponse, FlagLiteError> {
-        let url = format!("{}/auth/login", self.base_url);
-        let req = LoginRequest {
-            email: email.to_string(),
+    /// Signup with optional username and password
+    pub async fn signup(
+        &self,
+        username: Option<&str>,
+        password: &str,
+    ) -> Result<SignupResponse, FlagLiteError> {
+        let url = format!("{}/v1/auth/signup", self.base_url);
+        let req = SignupRequest {
+            username: username.map(|s| s.to_string()),
             password: password.to_string(),
         };
 
@@ -80,13 +96,32 @@ impl FlagLiteClient {
             return Err(self.handle_error(status, &body).await);
         }
 
-        serde_json::from_str(&body)
-            .map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
+        serde_json::from_str(&body).map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
+    }
+
+    /// Login with username and password
+    pub async fn login(&self, username: &str, password: &str) -> Result<AuthResponse, FlagLiteError> {
+        let url = format!("{}/v1/auth/login", self.base_url);
+        let req = LoginRequest {
+            username: username.to_string(),
+            password: password.to_string(),
+        };
+
+        let resp = self.client.post(&url).json(&req).send().await?;
+
+        let status = resp.status();
+        let body = resp.text().await?;
+
+        if !status.is_success() {
+            return Err(self.handle_error(status, &body).await);
+        }
+
+        serde_json::from_str(&body).map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
     }
 
     /// Get current user info
     pub async fn whoami(&self) -> Result<User, FlagLiteError> {
-        let url = format!("{}/auth/me", self.base_url);
+        let url = format!("{}/v1/auth/me", self.base_url);
         let auth = self.auth_header()?;
 
         let resp = self
@@ -103,8 +138,7 @@ impl FlagLiteClient {
             return Err(self.handle_error(status, &body).await);
         }
 
-        serde_json::from_str(&body)
-            .map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
+        serde_json::from_str(&body).map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
     }
 
     // === Projects ===
@@ -133,8 +167,7 @@ impl FlagLiteClient {
             return Ok(paginated.data);
         }
 
-        serde_json::from_str(&body)
-            .map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
+        serde_json::from_str(&body).map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
     }
 
     /// Create a new project
@@ -157,14 +190,16 @@ impl FlagLiteClient {
             return Err(self.handle_error(status, &body).await);
         }
 
-        serde_json::from_str(&body)
-            .map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
+        serde_json::from_str(&body).map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
     }
 
     // === Environments ===
 
     /// List environments for a project
-    pub async fn list_environments(&self, project_id: &str) -> Result<Vec<Environment>, FlagLiteError> {
+    pub async fn list_environments(
+        &self,
+        project_id: &str,
+    ) -> Result<Vec<Environment>, FlagLiteError> {
         let url = format!("{}/projects/{}/environments", self.base_url, project_id);
         let auth = self.auth_header()?;
 
@@ -186,8 +221,7 @@ impl FlagLiteClient {
             return Ok(paginated.data);
         }
 
-        serde_json::from_str(&body)
-            .map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
+        serde_json::from_str(&body).map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
     }
 
     // === Flags ===
@@ -222,8 +256,7 @@ impl FlagLiteClient {
             return Ok(paginated.data);
         }
 
-        serde_json::from_str(&body)
-            .map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
+        serde_json::from_str(&body).map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
     }
 
     /// Get a specific flag
@@ -257,8 +290,7 @@ impl FlagLiteClient {
             return Err(self.handle_error(status, &body).await);
         }
 
-        serde_json::from_str(&body)
-            .map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
+        serde_json::from_str(&body).map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
     }
 
     /// Create a new flag
@@ -285,8 +317,7 @@ impl FlagLiteClient {
             return Err(self.handle_error(status, &body).await);
         }
 
-        serde_json::from_str(&body)
-            .map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
+        serde_json::from_str(&body).map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
     }
 
     /// Toggle a flag's enabled state
@@ -320,8 +351,7 @@ impl FlagLiteClient {
             return Err(self.handle_error(status, &body).await);
         }
 
-        serde_json::from_str(&body)
-            .map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
+        serde_json::from_str(&body).map_err(|e| FlagLiteError::InvalidResponse(e.to_string()))
     }
 
     /// Delete a flag

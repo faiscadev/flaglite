@@ -5,11 +5,25 @@ use crate::output::Output;
 use anyhow::Result;
 use flaglite_shared::{CreateProjectRequest, FlagLiteClient};
 
+/// Create an authenticated client from config
+fn client_from_config(config: &Config) -> Result<FlagLiteClient> {
+    let client = FlagLiteClient::new(&config.api_url);
+
+    // Prefer API key over token
+    if let Some(api_key) = &config.api_key {
+        Ok(client.with_api_key(api_key))
+    } else if let Some(token) = &config.token {
+        Ok(client.with_token(token))
+    } else {
+        Err(anyhow::anyhow!(
+            "Not logged in. Run `flaglite signup` or `flaglite login`"
+        ))
+    }
+}
+
 /// List all projects
 pub async fn list(config: &Config, output: &Output) -> Result<()> {
-    let token = config.require_token()?;
-
-    let client = FlagLiteClient::new(&config.api_url).with_token(token);
+    let client = client_from_config(config)?;
     let projects = client.list_projects().await?;
 
     output.print_projects(&projects, config.project_id.as_deref())?;
@@ -24,9 +38,7 @@ pub async fn create(
     name: String,
     description: Option<String>,
 ) -> Result<()> {
-    let token = config.require_token()?;
-
-    let client = FlagLiteClient::new(&config.api_url).with_token(token);
+    let client = client_from_config(config)?;
 
     let req = CreateProjectRequest { name, description };
     let project = client.create_project(req).await?;
@@ -45,10 +57,7 @@ pub async fn create(
 
 /// Set the default project
 pub async fn use_project(config: &mut Config, output: &Output, project: String) -> Result<()> {
-    let token = config.require_token()?;
-
-    // Verify project exists by listing projects
-    let client = FlagLiteClient::new(&config.api_url).with_token(token);
+    let client = client_from_config(config)?;
     let projects = client.list_projects().await?;
 
     let found = projects.iter().find(|p| {
