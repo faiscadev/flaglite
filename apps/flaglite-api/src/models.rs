@@ -57,6 +57,7 @@ pub struct ApiKey {
 }
 
 #[derive(Debug, Serialize)]
+#[allow(dead_code)] // Kept for future use in API responses
 pub struct ApiKeyResponse {
     pub id: String,
     pub key_prefix: String,
