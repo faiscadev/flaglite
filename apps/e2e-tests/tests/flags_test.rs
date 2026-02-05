@@ -116,7 +116,7 @@ async fn test_toggle_flag() {
     // Get initial state
     let initial = user.flags_get(&flag_key).expect("flags get failed");
     let initial_enabled = initial.enabled;
-    eprintln!("DEBUG: initial_enabled = {}", initial_enabled);
+    eprintln!("DEBUG: initial_enabled = {initial_enabled}");
 
     // Toggle the flag
     let raw_toggle = user.exec(&["flags", "toggle", &flag_key]);
@@ -129,7 +129,7 @@ async fn test_toggle_flag() {
         "flags toggle failed: {:?}",
         toggle_result.err()
     );
-    eprintln!("DEBUG: toggle returned = {:?}", toggle_result);
+    eprintln!("DEBUG: toggle returned = {toggle_result:?}");
 
     // Debug: check raw CLI output for get after toggle
     let raw_get_after = user.exec(&["flags", "get", &flag_key]);
@@ -196,7 +196,7 @@ async fn test_create_flag_types() {
         let flag_key = format!("typed_flag_{}_{}", suffix, unique_flag_key());
         let result = user.flags_create(
             &flag_key,
-            Some(&format!("{} Flag", flag_type)),
+            Some(&format!("{flag_type} Flag")),
             Some(flag_type),
             false,
         );
@@ -232,7 +232,7 @@ async fn test_create_multiple_flags() {
     let mut created_keys = Vec::new();
     for i in 0..5 {
         let flag_key = format!("multi_flag_{}_{}", i, unique_flag_key());
-        user.flags_create(&flag_key, Some(&format!("Flag {}", i)), None, i % 2 == 0)
+        user.flags_create(&flag_key, Some(&format!("Flag {i}")), None, i % 2 == 0)
             .expect("flags create failed");
         created_keys.push(flag_key);
     }
@@ -242,7 +242,7 @@ async fn test_create_multiple_flags() {
 
     for key in &created_keys {
         let found = flags.iter().any(|f| f.key == *key);
-        assert!(found, "Flag {} not found in list", key);
+        assert!(found, "Flag {key} not found in list");
     }
 }
 

@@ -57,7 +57,7 @@ impl TestHarness {
 
         // Create test directory
         let test_id = std::process::id();
-        let test_dir = std::env::temp_dir().join(format!("flaglite-e2e-{}-{}", test_name, test_id));
+        let test_dir = std::env::temp_dir().join(format!("flaglite-e2e-{test_name}-{test_id}"));
         if test_dir.exists() {
             fs::remove_dir_all(&test_dir)?;
         }
@@ -75,7 +75,7 @@ impl TestHarness {
         let server_stderr_path = test_dir.join("server_stderr.log");
 
         let mut harness = Self {
-            server_url: format!("http://127.0.0.1:{}", port),
+            server_url: format!("http://127.0.0.1:{port}"),
             test_dir,
             flaglite_bin,
             flaglite_api_bin,
@@ -154,8 +154,8 @@ impl TestHarness {
                         "Server exited unexpectedly\n\
                          Server stdout:\n{}\n\
                          Server stderr:\n{}",
-                        stdout.unwrap_or_else(|e| format!("<failed to read: {}>", e)),
-                        stderr.unwrap_or_else(|e| format!("<failed to read: {}>", e))
+                        stdout.unwrap_or_else(|e| format!("<failed to read: {e}>")),
+                        stderr.unwrap_or_else(|e| format!("<failed to read: {e}>"))
                     )
                     .into());
                 }
@@ -182,8 +182,8 @@ impl TestHarness {
                      Server stdout:\n{}\n\
                      Server stderr:\n{}",
                     timeout_secs,
-                    stdout.unwrap_or_else(|e| format!("<failed to read: {}>", e)),
-                    stderr.unwrap_or_else(|e| format!("<failed to read: {}>", e))
+                    stdout.unwrap_or_else(|e| format!("<failed to read: {e}>")),
+                    stderr.unwrap_or_else(|e| format!("<failed to read: {e}>"))
                 )
                 .into());
             }
@@ -215,7 +215,7 @@ impl TestHarness {
     ///
     /// Each user gets their own HOME directory so credentials are isolated.
     pub fn create_user(&self, name: &str) -> TestUser {
-        let home_dir = self.test_dir.join(format!("user_{}", name));
+        let home_dir = self.test_dir.join(format!("user_{name}"));
         fs::create_dir_all(&home_dir).expect("Failed to create user home dir");
 
         TestUser {
@@ -346,14 +346,14 @@ impl TestUser {
             .find(|line| line.contains("Username:"))
             .and_then(|line| line.split(':').nth(1))
             .map(|s| s.trim().to_string())
-            .ok_or_else(|| format!("Failed to parse username from output: {}", stdout))?;
+            .ok_or_else(|| format!("Failed to parse username from output: {stdout}"))?;
 
         let api_key = stdout
             .lines()
             .find(|line| line.contains("API Key:"))
             .and_then(|line| line.split(':').nth(1))
             .map(|s| s.trim().to_string())
-            .ok_or_else(|| format!("Failed to parse API key from output: {}", stdout))?;
+            .ok_or_else(|| format!("Failed to parse API key from output: {stdout}"))?;
 
         Ok(SignupInfo {
             username: parsed_username,
@@ -419,11 +419,11 @@ impl TestUser {
 
         // Check for error in stdout (JSON mode outputs errors to stdout)
         if stdout.contains("\"error\"") {
-            return Err(format!("Projects list failed: {}", stdout));
+            return Err(format!("Projects list failed: {stdout}"));
         }
 
         if result.failed() {
-            return Err(format!("Projects list failed: {} {}", stdout, stderr));
+            return Err(format!("Projects list failed: {stdout} {stderr}"));
         }
 
         // Try to parse as JSON array

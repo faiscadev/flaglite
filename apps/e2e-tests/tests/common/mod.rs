@@ -10,5 +10,7 @@
 pub mod harness;
 pub mod utils;
 
-pub use harness::TestHarness;
+#[allow(unused_imports)]
+pub use harness::{TestHarness, TestUser};
+#[allow(unused_imports)]
 pub use utils::*;
