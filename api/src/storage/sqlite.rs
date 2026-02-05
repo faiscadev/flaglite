@@ -359,6 +359,22 @@ impl Storage for SqliteStorage {
         Ok(flag_values)
     }
 
+    async fn delete_flag(&self, flag_id: &str) -> Result<()> {
+        // Delete flag values first (foreign key)
+        sqlx::query("DELETE FROM flag_values WHERE flag_id = ?")
+            .bind(flag_id)
+            .execute(&self.pool)
+            .await?;
+
+        // Delete the flag
+        sqlx::query("DELETE FROM flags WHERE id = ?")
+            .bind(flag_id)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
     // ============ Migrations ============
 
     async fn run_migrations(&self) -> Result<()> {

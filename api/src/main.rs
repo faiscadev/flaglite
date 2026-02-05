@@ -7,7 +7,7 @@ mod storage;
 mod username;
 
 use axum::{
-    routing::{get, patch, post},
+    routing::{delete, get, patch, post},
     Router,
 };
 use clap::{Parser, Subcommand};
@@ -102,11 +102,20 @@ fn create_router(state: models::AppState) -> Router {
         .route("/v1/auth/signup", post(handlers::auth::signup))
         .route("/v1/auth/login", post(handlers::auth::login))
         .route("/v1/auth/me", get(handlers::auth::me).patch(handlers::auth::update_me))
-        // Project routes
+        // CLI-compatible project routes (no /v1 prefix)
+        .route("/projects", get(handlers::cli::list_projects))
+        .route("/projects", post(handlers::cli::create_project))
+        .route("/projects/:project_id/environments", get(handlers::cli::list_environments))
+        .route("/projects/:project_id/flags", get(handlers::cli::list_flags))
+        .route("/projects/:project_id/flags", post(handlers::cli::create_flag))
+        .route("/projects/:project_id/flags/:key", get(handlers::cli::get_flag))
+        .route("/projects/:project_id/flags/:key", delete(handlers::cli::delete_flag))
+        .route("/projects/:project_id/flags/:key/toggle", post(handlers::cli::toggle_flag))
+        // Legacy v1 project routes (for backward compatibility)
         .route("/v1/projects", get(handlers::projects::list_projects))
         .route("/v1/projects", post(handlers::projects::create_project))
         .route("/v1/projects/:project_id/environments", get(handlers::projects::list_environments))
-        // Flag routes
+        // SDK flag routes (v1 prefix)
         .route("/v1/flags", get(handlers::flags::list_flags))
         .route("/v1/flags", post(handlers::flags::create_flag))
         .route("/v1/flags/:key", get(handlers::flags::evaluate_flag))

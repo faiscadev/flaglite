@@ -51,6 +51,7 @@ pub trait Storage: Send + Sync {
     async fn get_flag_value(&self, flag_id: &str, environment_id: &str) -> Result<Option<FlagValue>>;
     async fn update_flag_value(&self, flag_value: &FlagValue) -> Result<()>;
     async fn list_flag_values_by_flag_ids(&self, flag_ids: &[String]) -> Result<Vec<FlagValue>>;
+    async fn delete_flag(&self, flag_id: &str) -> Result<()>;
 
     // Migrations
     async fn run_migrations(&self) -> Result<()>;
