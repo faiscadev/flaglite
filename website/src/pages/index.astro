@@ -7,8 +7,8 @@ import '../styles/landing.css';
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FlagLite — Feature flags without the enterprise hangover</title>
-  <meta name="description" content="Ship features safely with a 6.9MB binary. Open source (AGPL-3.0), self-host forever, first flag in 30 seconds.">
+  <title>FlagLite — Ship features faster. Stress less.</title>
+  <meta name="description" content="Feature flags that get out of your way. Open source, dead simple, and your first flag ships in 30 seconds.">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <!-- Syntax highlighting (both themes for light/dark mode) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" media="(prefers-color-scheme: dark)" id="prism-dark">
@@ -42,11 +42,11 @@ import '../styles/landing.css';
   <!-- Hero -->
   <section class="hero">
     <div class="container">
-      <h1>Feature flags without the enterprise hangover.</h1>
-      <p class="subhead">Ship features safely with a 6.9MB binary. Open source (AGPL-3.0), self-host forever, first flag in 30 seconds. No PhD in YAML required.</p>
+      <h1>Ship features faster. Stress less.</h1>
+      <p class="subhead">Feature flags that get out of your way. Open source, dead simple, and your first flag ships in 30 seconds.</p>
       <div class="cta-group">
-        <a href="/docs/quickstart" class="btn btn-primary">Get Started →</a>
-        <a href="https://github.com/faiscadev/flaglite" class="btn btn-secondary">View on GitHub</a>
+        <a href="/signup" class="btn btn-primary">Get Started Free →</a>
+        <a href="https://github.com/faiscadev/flaglite" class="btn btn-secondary">View on GitHub ↗</a>
       </div>
     </div>
   </section>
@@ -54,17 +54,59 @@ import '../styles/landing.css';
   <!-- Quick Start -->
   <section class="quickstart" id="quickstart">
     <div class="container">
-      <h2>Clone. Flag. Ship.</h2>
-      <p class="section-subtitle">Three commands. Thirty seconds. That's it.</p>
-      <div class="code-block">
-        <div class="code-header">
-          <span class="code-lang">bash</span>
-          <button class="copy-btn">Copy</button>
+      <h2>Three steps. Thirty seconds.</h2>
+      <p class="section-subtitle">No config files. No infrastructure. Just flags.</p>
+      
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Grab your API key</h3>
+            <p>Sign up and copy your key. That's it.</p>
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn">Copy</button>
+              </div>
+              <pre><code class="language-bash">curl -X POST https://api.flaglite.dev/v1/auth/signup \
+  -d '&#123;"email":"you@example.com", "password":"yourpassword"&#125;'</code></pre>
+            </div>
+          </div>
         </div>
-        <pre><code class="language-bash" id="quickstart-code">git clone https://github.com/faiscadev/flaglite && cd flaglite
-docker compose up -d
-curl localhost:8080/v1/flags -H "Content-Type: application/json" \
-  -d '&#123;"name": "dark-mode", "enabled": true&#125;'</code></pre>
+        
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Install the SDK</h3>
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">bash</span>
+                <button class="copy-btn">Copy</button>
+              </div>
+              <pre><code class="language-bash">npm install flaglite</code></pre>
+            </div>
+          </div>
+        </div>
+        
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Ship your first flag</h3>
+            <div class="code-block">
+              <div class="code-header">
+                <span class="code-lang">javascript</span>
+                <button class="copy-btn">Copy</button>
+              </div>
+              <pre><code class="language-javascript">import &#123; FlagLite &#125; from 'flaglite';
+
+const flags = new FlagLite(&#123; apiKey: 'flg_...' &#125;);
+
+if (await flags.enabled('new-checkout', &#123; userId: user.id &#125;)) &#123;
+  showNewCheckout();
+&#125;</code></pre>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -74,24 +116,24 @@ curl localhost:8080/v1/flags -H "Content-Type: application/json" \
     <div class="container">
       <div class="cards">
         <div class="card">
-          <div class="card-icon">📖</div>
-          <h3>Open Source</h3>
-          <p>Your code. Your servers. Forever. AGPL-3.0 licensed.</p>
-        </div>
-        <div class="card">
           <div class="card-icon">✨</div>
-          <h3>Simple</h3>
-          <p>Boolean flags. Percentage rollouts. Done.</p>
-        </div>
-        <div class="card">
-          <div class="card-icon">🔌</div>
-          <h3>API-First</h3>
-          <p>If the dashboard can do it, so can curl.</p>
+          <h3>Dead Simple</h3>
+          <p>One SDK. One API call. No PhD required.</p>
         </div>
         <div class="card">
           <div class="card-icon">💰</div>
           <h3>No MAU Tax</h3>
-          <p>$19/mo hosted. $0/mo self-hosted. No "per user" gotchas.</p>
+          <p>$19/month flat. Not $19 per 1,000 users.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔌</div>
+          <h3>API-First</h3>
+          <p>SDKs for JS, Python, Go, Rust. Clean REST API.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon">📖</div>
+          <h3>Open Source</h3>
+          <p>AGPL-3.0 licensed. Self-hostable. No vendor lock-in.</p>
         </div>
       </div>
     </div>
@@ -117,11 +159,11 @@ curl localhost:8080/v1/flags -H "Content-Type: application/json" \
               <span class="code-lang">javascript</span>
               <button class="copy-btn">Copy</button>
             </div>
-            <pre><code class="language-javascript">import &#123; FlagLite &#125; from '@faiscadev/flaglite';
+            <pre><code class="language-javascript">import &#123; FlagLite &#125; from 'flaglite';
 
-const client = new FlagLite(&#123; apiKey: 'your-api-key' &#125;);
+const flags = new FlagLite(&#123; apiKey: 'flg_your_api_key' &#125;);
 
-if (await client.evaluate('dark-mode', &#123; userId: 'user-123' &#125;)) &#123;
+if (await flags.enabled('dark-mode', &#123; userId: user.id &#125;)) &#123;
   enableDarkMode();
 &#125;</code></pre>
           </div>
@@ -135,9 +177,9 @@ if (await client.evaluate('dark-mode', &#123; userId: 'user-123' &#125;)) &#123;
             </div>
             <pre><code class="language-python">from flaglite import FlagLite
 
-client = FlagLite(api_key="your-api-key")
+flags = FlagLite(api_key="flg_your_api_key")
 
-if client.evaluate("dark-mode", user_id="user-123"):
+if flags.enabled("dark-mode", user_id=user.id):
     enable_dark_mode()</code></pre>
           </div>
         </div>
@@ -150,9 +192,9 @@ if client.evaluate("dark-mode", user_id="user-123"):
             </div>
             <pre><code class="language-go">import "github.com/faiscadev/flaglite-go"
 
-client := flaglite.New("your-api-key")
+flags := flaglite.New("flg_your_api_key")
 
-if enabled, _ := client.Evaluate("dark-mode", "user-123"); enabled &#123;
+if enabled, _ := flags.Enabled("dark-mode", userID); enabled &#123;
     enableDarkMode()
 &#125;</code></pre>
           </div>
@@ -166,9 +208,9 @@ if enabled, _ := client.Evaluate("dark-mode", "user-123"); enabled &#123;
             </div>
             <pre><code class="language-rust">use flaglite::FlagLite;
 
-let client = FlagLite::new("your-api-key");
+let flags = FlagLite::new("flg_your_api_key");
 
-if client.evaluate("dark-mode", "user-123").await? &#123;
+if flags.enabled("dark-mode", &user_id).await? &#123;
     enable_dark_mode();
 &#125;</code></pre>
           </div>
@@ -228,38 +270,78 @@ if client.evaluate("dark-mode", "user-123").await? &#123;
       <h2>Pricing</h2>
       <p class="section-subtitle">No MAU tax. Ever.</p>
       
-      <div class="pricing-cards">
+      <div class="pricing-cards pricing-cards-3">
         <div class="pricing-card">
           <div class="pricing-header">
             <h3>Free</h3>
             <div class="price">$0<span>/mo</span></div>
-            <p class="price-label">Self-hosted</p>
+            <p class="price-label">Get started instantly</p>
           </div>
           <ul>
-            <li>✓ Unlimited flags</li>
-            <li>✓ Unlimited users</li>
-            <li>✓ Unlimited evaluations</li>
-            <li>✓ All features</li>
-            <li>✓ Forever</li>
+            <li>✓ 1,000 evals/day</li>
+            <li>✓ 3 environments</li>
+            <li>✓ 1 team member</li>
+            <li>✓ All core features</li>
+            <li>✓ Community support</li>
           </ul>
-          <a href="https://github.com/faiscadev/flaglite" class="btn btn-secondary">Clone on GitHub</a>
+          <a href="/signup" class="btn btn-secondary">Get Started Free →</a>
         </div>
         
         <div class="pricing-card featured">
           <div class="pricing-badge">Popular</div>
           <div class="pricing-header">
-            <h3>Hosted</h3>
+            <h3>Pro</h3>
             <div class="price">$19<span>/mo</span></div>
-            <p class="price-label">We run it. You ship.</p>
+            <p class="price-label">For growing teams</p>
           </div>
           <ul>
-            <li>✓ Everything in Free</li>
-            <li>✓ Managed infrastructure</li>
+            <li>✓ Unlimited evaluations</li>
+            <li>✓ Unlimited environments</li>
+            <li>✓ 10 team members</li>
             <li>✓ 99.9% uptime SLA</li>
             <li>✓ Priority support</li>
-            <li>✓ No per-user pricing</li>
           </ul>
-          <a href="https://flaglite.dev/signup" class="btn btn-primary">Get Started →</a>
+          <a href="/signup?plan=pro" class="btn btn-primary">Get Started →</a>
+        </div>
+        
+        <div class="pricing-card">
+          <div class="pricing-header">
+            <h3>Self-Hosted</h3>
+            <div class="price">$0<span>/forever</span></div>
+            <p class="price-label">Your servers, your rules</p>
+          </div>
+          <ul>
+            <li>✓ Unlimited everything</li>
+            <li>✓ Full source code</li>
+            <li>✓ AGPL-3.0 licensed</li>
+            <li>✓ Run anywhere</li>
+            <li>✓ Community support</li>
+          </ul>
+          <a href="https://github.com/faiscadev/flaglite" class="btn btn-secondary">View on GitHub ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Self-Hosting -->
+  <section class="self-hosting" id="self-hosting">
+    <div class="container">
+      <div class="self-hosting-content">
+        <div class="self-hosting-text">
+          <h2>Prefer to self-host?</h2>
+          <p>FlagLite runs anywhere Docker runs. Full source code, AGPL-3.0 licensed, zero vendor lock-in.</p>
+          <a href="/docs/self-hosting" class="btn btn-secondary">Read the self-hosting docs →</a>
+        </div>
+        <div class="self-hosting-code">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code class="language-bash">git clone https://github.com/faiscadev/flaglite
+cd flaglite
+docker compose up -d</code></pre>
+          </div>
         </div>
       </div>
     </div>
@@ -268,11 +350,10 @@ if client.evaluate("dark-mode", "user-123").await? &#123;
   <!-- Footer CTA -->
   <section class="footer-cta">
     <div class="container">
-      <h2>Ready to ship?</h2>
-      <p>First flag in 30 seconds. Seriously, we timed it.</p>
+      <h2>Start shipping features today</h2>
+      <p>Your first flag is 30 seconds away. No credit card required.</p>
       <div class="cta-group">
-        <a href="/docs/quickstart" class="btn btn-primary">Get Started →</a>
-        <a href="https://github.com/faiscadev/flaglite" class="btn btn-secondary">View on GitHub</a>
+        <a href="/signup" class="btn btn-primary">Get Started Free →</a>
       </div>
     </div>
   </section>
@@ -288,6 +369,7 @@ if client.evaluate("dark-mode", "user-123").await? &#123;
         <div class="footer-links">
           <a href="https://github.com/faiscadev/flaglite">GitHub</a>
           <a href="/docs">Docs</a>
+          <a href="/docs/self-hosting">Self-Hosting</a>
           <a href="https://status.flaglite.dev">Status</a>
         </div>
       </div>

@@ -239,6 +239,53 @@ h2 {
   font-size: 1.1rem;
 }
 
+/* Steps */
+.steps {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.step {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.step-number {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-content h3 {
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+}
+
+.step-content > p {
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.step-content .code-block {
+  margin: 0;
+}
+
 .code-block {
   background: var(--code-bg);
   border: 1px solid var(--border);
@@ -430,10 +477,20 @@ tr:last-child td {
 
 .pricing-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 32px;
-  max-width: 720px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  max-width: 960px;
   margin: 0 auto;
+}
+
+.pricing-cards-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 900px) {
+  .pricing-cards-3 {
+    grid-template-columns: 1fr;
+  }
 }
 
 .pricing-card {
@@ -502,11 +559,56 @@ tr:last-child td {
   justify-content: center;
 }
 
+/* Self-Hosting Section */
+.self-hosting {
+  padding: 100px 0;
+  background: var(--bg-primary);
+}
+
+.self-hosting-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.self-hosting-text h2 {
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.self-hosting-text p {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  font-size: 1.1rem;
+}
+
+.self-hosting-code .code-block {
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .self-hosting-content {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  
+  .self-hosting-text h2 {
+    text-align: center;
+  }
+  
+  .self-hosting-text {
+    text-align: center;
+  }
+}
+
 /* Footer CTA */
 .footer-cta {
   padding: 100px 0;
   text-align: center;
-  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
 }
 
 .footer-cta h2 {
@@ -598,8 +700,20 @@ tr:last-child td {
   .sdk-examples,
   .comparison,
   .pricing,
+  .self-hosting,
   .footer-cta {
     padding: 60px 0;
+  }
+  
+  .step {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .step-number {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
   }
   
   .cards {
@@ -631,5 +745,6 @@ tr:last-child td {
   
   .footer-links {
     justify-content: center;
+    flex-wrap: wrap;
   }
 }
