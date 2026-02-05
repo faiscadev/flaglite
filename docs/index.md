@@ -10,7 +10,7 @@ New to FlagLite? Start here:
 
 1. **[Self-Hosting Guide](self-hosting.md)** — Deploy FlagLite in under 10 minutes
 2. **[Configuration Reference](configuration.md)** — All settings and options
-3. **[API Documentation](https://docs.flaglite.dev/api)** — REST API reference
+3. **[API Overview](api/overview.md)** — REST API reference
 
 ---
 
@@ -44,21 +44,17 @@ New to FlagLite? Start here:
 
 ### SDKs
 
-| Language | Documentation | Repository |
-|----------|---------------|------------|
-| JavaScript | [SDK Docs](https://docs.flaglite.dev/sdks/javascript) | [flaglite-js](https://github.com/faiscadev/flaglite-js) |
-| Python | [SDK Docs](https://docs.flaglite.dev/sdks/python) | [flaglite-py](https://github.com/faiscadev/flaglite-py) |
-| Go | [SDK Docs](https://docs.flaglite.dev/sdks/go) | [flaglite-go](https://github.com/faiscadev/flaglite-go) |
-| Rust | [SDK Docs](https://docs.flaglite.dev/sdks/rust) | [flaglite-rs](https://github.com/faiscadev/flaglite-rs) |
+| Language | Quick Start | Repository |
+|----------|-------------|------------|
+| JavaScript | [SDK Docs](sdks/javascript.md) | [sdks/js](../sdks/js/) |
+| Python | [SDK Docs](sdks/python.md) | [sdks/python](../sdks/python/) |
+| Go | [SDK Docs](sdks/go.md) | [sdks/go](../sdks/go/) |
+| Rust | [SDK Docs](sdks/rust.md) | [sdks/rust](../sdks/rust/) |
 
 ### API Reference
 
-- **[REST API](https://docs.flaglite.dev/api)** — Full API documentation
-- **[OpenAPI Spec](../openapi/)** — Machine-readable API specification
-
-### CLI
-
-- **[CLI Reference](https://docs.flaglite.dev/cli)** — Command-line interface docs
+- **[API Overview](api/overview.md)** — Authentication, endpoints, examples
+- **[OpenAPI Spec](../openapi/)** — Full machine-readable API specification
 
 ---
 

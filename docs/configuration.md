@@ -17,10 +17,22 @@ These environment variables configure the FlagLite API server.
 
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
-| `DATABASE_URL` | Database connection string | — | Yes |
+| `DATABASE_URL` | Database connection string | `sqlite:flaglite.db?mode=rwc` | No |
 | `JWT_SECRET` | Secret for signing JWTs (min 32 chars) | — | Yes |
 | `RUST_LOG` | Log level: `debug`, `info`, `warn`, `error` | `info` | No |
-| `PORT` | HTTP port to listen on | `8080` | No |
+
+### CLI Options
+
+The API server also accepts command-line arguments:
+
+```bash
+flaglite serve --port 3000 --host 0.0.0.0
+```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--port`, `-p` | HTTP port to listen on | `3000` |
+| `--host` | Host to bind to | `0.0.0.0` |
 
 ### DATABASE_URL
 
