@@ -1,0 +1,28 @@
+[package]
+name = "e2e-tests"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+flaglite-client = { path = "../../crates/flaglite-client" }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+reqwest = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+serial_test = "3"
+
+[[test]]
+name = "auth"
+path = "tests/auth_test.rs"
+
+[[test]]
+name = "projects"
+path = "tests/projects_test.rs"
+
+[[test]]
+name = "flags"
+path = "tests/flags_test.rs"

@@ -34,6 +34,7 @@ jobs:
       DATABASE_URL: postgres://flaglite:flaglite@localhost:5432/flaglite
       JWT_SECRET: test-secret-for-ci-only
       RUST_LOG: info
+      FLAGLITE_API_URL: http://localhost:3456
 
     steps:
       - name: Checkout
@@ -59,10 +60,13 @@ jobs:
             sleep 1
           done
 
-      - name: Run E2E tests
+      - name: Run E2E tests (Rust)
+        run: cargo test --package e2e-tests --locked
+
+      - name: Run E2E tests (Shell - Legacy)
         run: |
           chmod +x ./e2e/test-api.sh
-          FLAGLITE_API_URL=http://localhost:3456 VERBOSE=true ./e2e/test-api.sh
+          VERBOSE=true ./e2e/test-api.sh
 
   e2e-production:
     runs-on: ubuntu-latest
@@ -73,7 +77,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run E2E tests against production
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run E2E tests against production (Rust)
+        run: cargo test --package e2e-tests --locked
+        env:
+          FLAGLITE_API_URL: https://api.flaglite.dev
+        continue-on-error: true  # Don't fail the build, just report
+
+      - name: Run E2E tests against production (Shell - Legacy)
         run: |
           chmod +x ./e2e/test-api.sh
           FLAGLITE_API_URL=https://api.flaglite.dev VERBOSE=true ./e2e/test-api.sh

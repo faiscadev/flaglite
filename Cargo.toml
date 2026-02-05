@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "apps/flaglite-api",
     "apps/flaglite-cli",
+    "apps/e2e-tests",
     "crates/flaglite-core",
     "crates/flaglite-client",
     "xtask",
