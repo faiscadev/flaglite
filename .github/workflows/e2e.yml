@@ -45,8 +45,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Build API
-        run: cargo build --release -p flaglite-api
+      - name: Build binaries
+        run: cargo build --release -p flaglite-api -p flaglite
 
       - name: Start API server
         run: |
@@ -62,6 +62,9 @@ jobs:
 
       - name: Run E2E tests (Rust)
         run: cargo test --package e2e-tests --locked
+        env:
+          FLAGLITE_API_BIN: ./target/release/flaglite-api
+          FLAGLITE_CLI_BIN: ./target/release/flaglite
 
       - name: Run E2E tests (Shell - Legacy)
         run: |
@@ -82,10 +85,15 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - name: Build binaries
+        run: cargo build --release -p flaglite-api -p flaglite
+
       - name: Run E2E tests against production (Rust)
         run: cargo test --package e2e-tests --locked
         env:
           FLAGLITE_API_URL: https://api.flaglite.dev
+          FLAGLITE_API_BIN: ./target/release/flaglite-api
+          FLAGLITE_CLI_BIN: ./target/release/flaglite
         continue-on-error: true  # Don't fail the build, just report
 
       - name: Run E2E tests against production (Shell - Legacy)
