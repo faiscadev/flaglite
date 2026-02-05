@@ -1,5 +1,4 @@
 # Build stage
-# Build stage - using latest stable Rust
 FROM rust:latest AS builder
 
 WORKDIR /app
@@ -11,13 +10,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy workspace files
-COPY Cargo.toml Cargo.lock ./
-COPY api ./api
-COPY cli ./cli
-COPY shared ./shared
+COPY Cargo.toml Cargo.lock rust-toolchain.toml ./
+COPY apps ./apps
+COPY crates ./crates
+COPY xtask ./xtask
 
 # Build release binaries with both sqlite and postgres support (runtime selection)
-# Note: CLI package is named 'flaglite', API is 'flaglite-api'
 RUN cargo build --release -p flaglite-api && \
     cargo build --release -p flaglite
 
@@ -51,4 +49,3 @@ ENV RUST_LOG=info
 EXPOSE 8080
 
 CMD ["flaglite-api", "serve", "--port", "8080"]
-# Force rebuild 1770237578

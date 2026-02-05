@@ -3,7 +3,7 @@
 use crate::config::Config;
 use crate::output::Output;
 use anyhow::Result;
-use flaglite_shared::{CreateProjectRequest, FlagLiteClient};
+use flaglite_client::{CreateProjectRequest, FlagLiteClient};
 
 /// Create an authenticated client from config
 fn client_from_config(config: &Config) -> Result<FlagLiteClient> {

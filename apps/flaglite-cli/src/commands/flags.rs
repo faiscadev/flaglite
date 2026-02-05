@@ -4,7 +4,7 @@ use crate::config::Config;
 use crate::output::Output;
 use anyhow::Result;
 use dialoguer::Confirm;
-use flaglite_shared::{CreateFlagRequest, FlagLiteClient, FlagType};
+use flaglite_client::{CreateFlagRequest, FlagLiteClient, FlagType};
 
 /// Create an authenticated client from config
 fn client_from_config(config: &Config) -> Result<FlagLiteClient> {

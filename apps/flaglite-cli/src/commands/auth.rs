@@ -4,7 +4,7 @@ use crate::config::Config;
 use crate::output::Output;
 use anyhow::Result;
 use dialoguer::{Input, Password};
-use flaglite_shared::FlagLiteClient;
+use flaglite_client::FlagLiteClient;
 
 /// Sign up for FlagLite
 pub async fn signup(config: &mut Config, output: &Output) -> Result<()> {

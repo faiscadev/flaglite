@@ -3,7 +3,7 @@
 use crate::config::Config;
 use anyhow::Result;
 use colored::*;
-use flaglite_shared::{Environment, Flag, FlagWithState, Project, User};
+use flaglite_client::{Environment, Flag, FlagWithState, Project, User};
 use serde::Serialize;
 use std::str::FromStr;
 use tabled::{settings::Style, Table, Tabled};

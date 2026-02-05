@@ -1,7 +1,10 @@
 //! FlagLite API client
 
-use crate::error::FlagLiteError;
-use crate::types::*;
+use flaglite_core::{
+    ApiErrorResponse, AuthResponse, CreateFlagRequest, CreateProjectRequest, Environment,
+    Flag, FlagLiteError, FlagWithState, PaginatedResponse, Project, SignupRequest,
+    SignupResponse, User,
+};
 use reqwest::{Client, StatusCode};
 
 /// FlagLite API client
@@ -87,10 +90,19 @@ impl FlagLiteClient {
             password: password.to_string(),
         };
 
-        let resp = self.client.post(&url).json(&req).send().await?;
+        let resp = self
+            .client
+            .post(&url)
+            .json(&req)
+            .send()
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         let status = resp.status();
-        let body = resp.text().await?;
+        let body = resp
+            .text()
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         if !status.is_success() {
             return Err(self.handle_error(status, &body).await);
@@ -102,15 +114,24 @@ impl FlagLiteClient {
     /// Login with username and password
     pub async fn login(&self, username: &str, password: &str) -> Result<AuthResponse, FlagLiteError> {
         let url = format!("{}/v1/auth/login", self.base_url);
-        let req = LoginRequest {
+        let req = flaglite_core::LoginRequest {
             username: username.to_string(),
             password: password.to_string(),
         };
 
-        let resp = self.client.post(&url).json(&req).send().await?;
+        let resp = self
+            .client
+            .post(&url)
+            .json(&req)
+            .send()
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         let status = resp.status();
-        let body = resp.text().await?;
+        let body = resp
+            .text()
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         if !status.is_success() {
             return Err(self.handle_error(status, &body).await);
@@ -129,10 +150,14 @@ impl FlagLiteClient {
             .get(&url)
             .header("Authorization", auth)
             .send()
-            .await?;
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         let status = resp.status();
-        let body = resp.text().await?;
+        let body = resp
+            .text()
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         if !status.is_success() {
             return Err(self.handle_error(status, &body).await);
@@ -153,10 +178,14 @@ impl FlagLiteClient {
             .get(&url)
             .header("Authorization", auth)
             .send()
-            .await?;
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         let status = resp.status();
-        let body = resp.text().await?;
+        let body = resp
+            .text()
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         if !status.is_success() {
             return Err(self.handle_error(status, &body).await);
@@ -181,10 +210,14 @@ impl FlagLiteClient {
             .header("Authorization", auth)
             .json(&req)
             .send()
-            .await?;
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         let status = resp.status();
-        let body = resp.text().await?;
+        let body = resp
+            .text()
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         if !status.is_success() {
             return Err(self.handle_error(status, &body).await);
@@ -208,10 +241,14 @@ impl FlagLiteClient {
             .get(&url)
             .header("Authorization", auth)
             .send()
-            .await?;
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         let status = resp.status();
-        let body = resp.text().await?;
+        let body = resp
+            .text()
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         if !status.is_success() {
             return Err(self.handle_error(status, &body).await);
@@ -243,10 +280,14 @@ impl FlagLiteClient {
             .get(&url)
             .header("Authorization", auth)
             .send()
-            .await?;
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         let status = resp.status();
-        let body = resp.text().await?;
+        let body = resp
+            .text()
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         if !status.is_success() {
             return Err(self.handle_error(status, &body).await);
@@ -277,10 +318,14 @@ impl FlagLiteClient {
             .get(&url)
             .header("Authorization", auth)
             .send()
-            .await?;
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         let status = resp.status();
-        let body = resp.text().await?;
+        let body = resp
+            .text()
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         if status == StatusCode::NOT_FOUND {
             return Err(FlagLiteError::FlagNotFound(key.to_string()));
@@ -308,10 +353,14 @@ impl FlagLiteClient {
             .header("Authorization", auth)
             .json(&req)
             .send()
-            .await?;
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         let status = resp.status();
-        let body = resp.text().await?;
+        let body = resp
+            .text()
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         if !status.is_success() {
             return Err(self.handle_error(status, &body).await);
@@ -338,10 +387,14 @@ impl FlagLiteClient {
             .post(&url)
             .header("Authorization", auth)
             .send()
-            .await?;
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         let status = resp.status();
-        let body = resp.text().await?;
+        let body = resp
+            .text()
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         if status == StatusCode::NOT_FOUND {
             return Err(FlagLiteError::FlagNotFound(key.to_string()));
@@ -364,7 +417,8 @@ impl FlagLiteClient {
             .delete(&url)
             .header("Authorization", auth)
             .send()
-            .await?;
+            .await
+            .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
 
         let status = resp.status();
 
@@ -373,7 +427,10 @@ impl FlagLiteClient {
         }
 
         if !status.is_success() {
-            let body = resp.text().await?;
+            let body = resp
+                .text()
+                .await
+                .map_err(|e| FlagLiteError::NetworkError(e.to_string()))?;
             return Err(self.handle_error(status, &body).await);
         }
 

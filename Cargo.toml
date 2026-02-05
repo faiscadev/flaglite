@@ -1,6 +1,12 @@
 [workspace]
 resolver = "2"
-members = ["api", "cli", "shared"]
+members = [
+    "apps/flaglite-api",
+    "apps/flaglite-cli",
+    "crates/flaglite-core",
+    "crates/flaglite-client",
+    "xtask",
+]
 
 [workspace.package]
 version = "0.1.0"

@@ -26,7 +26,7 @@ pub enum FlagLiteError {
     ApiError { status: u16, message: String },
 
     #[error("Network error: {0}")]
-    NetworkError(#[from] reqwest::Error),
+    NetworkError(String),
 
     #[error("Invalid response: {0}")]
     InvalidResponse(String),

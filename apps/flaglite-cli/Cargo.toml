@@ -1,15 +1,17 @@
 [package]
 name = "flaglite"
 version.workspace = true
-edition = "2021"
+edition.workspace = true
 description = "CLI for FlagLite feature flag management"
+license.workspace = true
+repository.workspace = true
 
 [[bin]]
 name = "flaglite"
 path = "src/main.rs"
 
 [dependencies]
-flaglite-shared = { path = "../shared" }
+flaglite-client = { path = "../../crates/flaglite-client" }
 serde.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
