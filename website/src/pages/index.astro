@@ -52,63 +52,215 @@ import '../styles/landing.css';
     </div>
   </section>
 
-  <!-- Quick Start -->
+  <!-- Quick Start: Setup -->
   <section class="quickstart" id="quickstart">
     <div class="container">
-      <h2>Three steps. Thirty seconds.</h2>
-      <p class="section-subtitle">No config files. No infrastructure. Just flags.</p>
+      <h2>1. Install the CLI</h2>
+      <p class="section-subtitle">Pick your favorite install method. No email required to sign up.</p>
       
-      <div class="steps">
-        <div class="step">
-          <div class="step-number">1</div>
-          <div class="step-content">
-            <h3>Sign up &amp; install the CLI</h3>
-            <p>One command. No email required.</p>
-            <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">bash</span>
-                <button class="copy-btn">Copy</button>
-              </div>
-              <pre><code class="language-bash"># Install CLI
+      <div class="tabs install-tabs">
+        <button class="tab active" data-tab="install-curl">curl</button>
+        <button class="tab" data-tab="install-npm">npm</button>
+        <button class="tab" data-tab="install-cargo">cargo</button>
+        <button class="tab" data-tab="install-brew">brew</button>
+      </div>
+      
+      <div class="tab-content">
+        <div class="tab-pane active" id="install-curl">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code class="language-bash"># Install CLI (works on macOS &amp; Linux)
+curl -fsSL https://flaglite.dev/install.sh | sh
+
+# Sign up (no email needed!)
+flaglite signup
+
+# Create your first flag
+flaglite flags create dark-mode --enabled</code></pre>
+          </div>
+        </div>
+        
+        <div class="tab-pane" id="install-npm">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code class="language-bash"># Install globally via npm
+npm install -g @faiscadev/flaglite-cli
+
+# Sign up (no email needed!)
+flaglite signup
+
+# Create your first flag
+flaglite flags create dark-mode --enabled</code></pre>
+          </div>
+        </div>
+        
+        <div class="tab-pane" id="install-cargo">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code class="language-bash"># Install via Cargo (Rust)
 cargo install flaglite
 
 # Sign up (no email needed!)
-flaglite signup</code></pre>
-            </div>
+flaglite signup
+
+# Create your first flag
+flaglite flags create dark-mode --enabled</code></pre>
           </div>
         </div>
         
-        <div class="step">
-          <div class="step-number">2</div>
-          <div class="step-content">
-            <h3>Install the SDK</h3>
-            <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">bash</span>
-                <button class="copy-btn">Copy</button>
-              </div>
-              <pre><code class="language-bash">npm install flaglite</code></pre>
+        <div class="tab-pane" id="install-brew">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
             </div>
+            <pre><code class="language-bash"># Install via Homebrew (macOS)
+brew install faiscadev/tap/flaglite
+
+# Sign up (no email needed!)
+flaglite signup
+
+# Create your first flag
+flaglite flags create dark-mode --enabled</code></pre>
           </div>
         </div>
-        
-        <div class="step">
-          <div class="step-number">3</div>
-          <div class="step-content">
-            <h3>Ship your first flag</h3>
-            <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">javascript</span>
-                <button class="copy-btn">Copy</button>
-              </div>
-              <pre><code class="language-javascript">import &#123; FlagLite &#125; from 'flaglite';
+      </div>
+    </div>
+  </section>
+  
+  <!-- Quick Start: Usage -->
+  <section class="quickstart-usage" id="usage">
+    <div class="container">
+      <h2>2. Use in your app</h2>
+      <p class="section-subtitle">Install the SDK for your language and evaluate flags in 3 lines.</p>
+      
+      <div class="tabs usage-tabs">
+        <button class="tab active" data-tab="usage-js">JavaScript</button>
+        <button class="tab" data-tab="usage-python">Python</button>
+        <button class="tab" data-tab="usage-go">Go</button>
+        <button class="tab" data-tab="usage-rust">Rust</button>
+        <button class="tab" data-tab="usage-cli">CLI</button>
+      </div>
+      
+      <div class="tab-content">
+        <div class="tab-pane active" id="usage-js">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code class="language-bash">npm install flaglite</code></pre>
+          </div>
+          <div class="code-block" style="margin-top: 1rem;">
+            <div class="code-header">
+              <span class="code-lang">javascript</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code class="language-javascript">import &#123; FlagLite &#125; from 'flaglite';
 
 const flags = new FlagLite(&#123; apiKey: 'flg_...' &#125;);
 
-if (await flags.enabled('new-checkout', &#123; userId: user.id &#125;)) &#123;
-  showNewCheckout();
+if (await flags.enabled('dark-mode', &#123; userId: user.id &#125;)) &#123;
+  enableDarkMode();
 &#125;</code></pre>
+          </div>
+        </div>
+        
+        <div class="tab-pane" id="usage-python">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
             </div>
+            <pre><code class="language-bash">pip install flaglite</code></pre>
+          </div>
+          <div class="code-block" style="margin-top: 1rem;">
+            <div class="code-header">
+              <span class="code-lang">python</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code class="language-python">from flaglite import FlagLite
+
+flags = FlagLite(api_key="flg_...")
+
+if flags.enabled("dark-mode", user_id=user.id):
+    enable_dark_mode()</code></pre>
+          </div>
+        </div>
+        
+        <div class="tab-pane" id="usage-go">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code class="language-bash">go get github.com/faiscadev/flaglite-go</code></pre>
+          </div>
+          <div class="code-block" style="margin-top: 1rem;">
+            <div class="code-header">
+              <span class="code-lang">go</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code class="language-go">import "github.com/faiscadev/flaglite-go"
+
+flags := flaglite.New("flg_...")
+
+if enabled, _ := flags.Enabled("dark-mode", userID); enabled &#123;
+    enableDarkMode()
+&#125;</code></pre>
+          </div>
+        </div>
+        
+        <div class="tab-pane" id="usage-rust">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code class="language-bash">cargo add flaglite</code></pre>
+          </div>
+          <div class="code-block" style="margin-top: 1rem;">
+            <div class="code-header">
+              <span class="code-lang">rust</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code class="language-rust">use flaglite::FlagLite;
+
+let flags = FlagLite::new("flg_...");
+
+if flags.enabled("dark-mode", &amp;user_id).await? &#123;
+    enable_dark_mode();
+&#125;</code></pre>
+          </div>
+        </div>
+        
+        <div class="tab-pane" id="usage-cli">
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-lang">bash</span>
+              <button class="copy-btn">Copy</button>
+            </div>
+            <pre><code class="language-bash"># Great for scripts, CI/CD, and automation
+
+# Evaluate a flag
+flaglite flags eval dark-mode --user-id user-123
+
+# Use in a bash script
+if flaglite flags eval dark-mode --user-id $USER_ID --quiet; then
+  echo "Dark mode enabled!"
+fi
+
+# JSON output for parsing
+flaglite flags eval dark-mode --user-id user-123 --format json</code></pre>
           </div>
         </div>
       </div>
@@ -146,86 +298,6 @@ if (await flags.enabled('new-checkout', &#123; userId: user.id &#125;)) &#123;
           </div>
           <h3>Open Source</h3>
           <p>AGPL-3.0 licensed. Self-hostable. No vendor lock-in.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- SDK Examples -->
-  <section class="sdk-examples" id="sdks">
-    <div class="container">
-      <h2>SDKs for every stack</h2>
-      <p class="section-subtitle">Copy-paste ready. Under 10 lines each.</p>
-      
-      <div class="tabs">
-        <button class="tab active" data-tab="js">JavaScript</button>
-        <button class="tab" data-tab="python">Python</button>
-        <button class="tab" data-tab="go">Go</button>
-        <button class="tab" data-tab="rust">Rust</button>
-      </div>
-      
-      <div class="tab-content">
-        <div class="tab-pane active" id="js">
-          <div class="code-block">
-            <div class="code-header">
-              <span class="code-lang">javascript</span>
-              <button class="copy-btn">Copy</button>
-            </div>
-            <pre><code class="language-javascript">import &#123; FlagLite &#125; from 'flaglite';
-
-const flags = new FlagLite(&#123; apiKey: 'flg_your_api_key' &#125;);
-
-if (await flags.enabled('dark-mode', &#123; userId: user.id &#125;)) &#123;
-  enableDarkMode();
-&#125;</code></pre>
-          </div>
-        </div>
-        
-        <div class="tab-pane" id="python">
-          <div class="code-block">
-            <div class="code-header">
-              <span class="code-lang">python</span>
-              <button class="copy-btn">Copy</button>
-            </div>
-            <pre><code class="language-python">from flaglite import FlagLite
-
-flags = FlagLite(api_key="flg_your_api_key")
-
-if flags.enabled("dark-mode", user_id=user.id):
-    enable_dark_mode()</code></pre>
-          </div>
-        </div>
-        
-        <div class="tab-pane" id="go">
-          <div class="code-block">
-            <div class="code-header">
-              <span class="code-lang">go</span>
-              <button class="copy-btn">Copy</button>
-            </div>
-            <pre><code class="language-go">import "github.com/faiscadev/flaglite-go"
-
-flags := flaglite.New("flg_your_api_key")
-
-if enabled, _ := flags.Enabled("dark-mode", userID); enabled &#123;
-    enableDarkMode()
-&#125;</code></pre>
-          </div>
-        </div>
-        
-        <div class="tab-pane" id="rust">
-          <div class="code-block">
-            <div class="code-header">
-              <span class="code-lang">rust</span>
-              <button class="copy-btn">Copy</button>
-            </div>
-            <pre><code class="language-rust">use flaglite::FlagLite;
-
-let flags = FlagLite::new("flg_your_api_key");
-
-if flags.enabled("dark-mode", &user_id).await? &#123;
-    enable_dark_mode();
-&#125;</code></pre>
-          </div>
         </div>
       </div>
     </div>

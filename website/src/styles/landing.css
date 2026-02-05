@@ -242,6 +242,11 @@ body {
   background: var(--bg-secondary);
 }
 
+.quickstart .tab-content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
 h2 {
   font-size: 2.5rem;
   font-weight: 700;
@@ -397,6 +402,17 @@ code {
 }
 
 /* SDK Examples */
+.quickstart-usage {
+  padding: 100px 0;
+  background: var(--bg-primary);
+}
+
+.quickstart-usage .tab-content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* Legacy sdk-examples kept for compatibility */
 .sdk-examples {
   padding: 100px 0;
   background: var(--bg-secondary);
