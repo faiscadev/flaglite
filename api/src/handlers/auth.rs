@@ -111,7 +111,7 @@ pub async fn signup(
     state.storage.create_api_key(&api_key).await?;
 
     // Create first project
-    let project_name = req.project_name.unwrap_or_else(|| "My Project".to_string());
+    let project_name = req.project_name.unwrap_or_else(|| "default".to_string());
     let project_id = Uuid::new_v4().to_string();
     let project_api_key = generate_project_api_key();
 

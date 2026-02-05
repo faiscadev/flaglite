@@ -102,6 +102,10 @@ fn create_router(state: models::AppState) -> Router {
         .route("/v1/auth/signup", post(handlers::auth::signup))
         .route("/v1/auth/login", post(handlers::auth::login))
         .route("/v1/auth/me", get(handlers::auth::me).patch(handlers::auth::update_me))
+        // Project routes
+        .route("/v1/projects", get(handlers::projects::list_projects))
+        .route("/v1/projects", post(handlers::projects::create_project))
+        .route("/v1/projects/:project_id/environments", get(handlers::projects::list_environments))
         // Flag routes
         .route("/v1/flags", get(handlers::flags::list_flags))
         .route("/v1/flags", post(handlers::flags::create_flag))
