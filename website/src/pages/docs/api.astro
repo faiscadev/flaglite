@@ -1,0 +1,792 @@
+---
+// API Reference
+import { Code } from 'astro:components';
+---
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Reference - FlagLite</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --fg: #fafafa;
+      --muted: #a1a1aa;
+      --accent: #3b82f6;
+      --code-bg: #18181b;
+      --border: #27272a;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #eab308;
+      --purple: #a855f7;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.7;
+      padding: 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    h2 { font-size: 1.5rem; margin: 2.5rem 0 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+    h3 { font-size: 1.2rem; margin: 2rem 0 0.75rem; color: var(--fg); }
+    h4 { font-size: 1rem; margin: 1.5rem 0 0.5rem; color: var(--muted); }
+    p { margin: 1rem 0; color: var(--muted); }
+    pre { background: var(--code-bg); padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
+    code { font-family: 'SF Mono', Consolas, monospace; font-size: 0.9rem; }
+    .lead { font-size: 1.2rem; color: var(--fg); }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--fg); font-weight: 600; }
+    td { color: var(--muted); }
+    td code { background: var(--code-bg); padding: 0.2rem 0.4rem; border-radius: 4px; }
+    .back { margin-bottom: 2rem; display: inline-block; }
+    hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+    .method { 
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-right: 0.5rem;
+    }
+    .method-get { background: var(--green); color: #000; }
+    .method-post { background: var(--accent); color: #fff; }
+    .method-delete { background: var(--red); color: #fff; }
+    .method-patch { background: var(--yellow); color: #000; }
+    .endpoint { 
+      font-family: 'SF Mono', Consolas, monospace;
+      font-size: 1rem;
+      color: var(--fg);
+    }
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    .param-required {
+      color: var(--red);
+      font-size: 0.75rem;
+      margin-left: 0.25rem;
+    }
+    .param-optional {
+      color: var(--muted);
+      font-size: 0.75rem;
+      margin-left: 0.25rem;
+    }
+    .note {
+      background: rgba(59, 130, 246, 0.1);
+      border-left: 3px solid var(--accent);
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .note p { margin: 0; }
+    .warning {
+      background: rgba(234, 179, 8, 0.1);
+      border-left: 3px solid var(--yellow);
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .warning p { margin: 0; }
+    .toc {
+      background: var(--code-bg);
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+    }
+    .toc ul { list-style: none; margin: 0.5rem 0; padding-left: 1rem; }
+    .toc li { margin: 0.25rem 0; }
+    .toc a { color: var(--muted); }
+    .toc a:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <a href="/" class="back">← Back to FlagLite</a>
+  
+  <h1>API Reference</h1>
+  <p class="lead">Complete reference for the FlagLite REST API.</p>
+  
+  <p><strong>Base URL:</strong> <code>https://api.flaglite.dev</code></p>
+  
+  <nav class="toc">
+    <strong>Contents</strong>
+    <ul>
+      <li><a href="#authentication">Authentication</a></li>
+      <li><a href="#errors">Error Handling</a></li>
+      <li><a href="#auth-endpoints">Auth Endpoints</a></li>
+      <li><a href="#project-endpoints">Project Endpoints</a></li>
+      <li><a href="#flag-endpoints">Flag Endpoints</a></li>
+    </ul>
+  </nav>
+  
+  <hr>
+  
+  <h2 id="authentication">Authentication</h2>
+  
+  <p>FlagLite uses Bearer token authentication. Include your token in the <code>Authorization</code> header:</p>
+  
+  <Code code="Authorization: Bearer <token>" lang="text" theme="github-dark" />
+  
+  <h4>Token Types</h4>
+  
+  <table>
+    <thead>
+      <tr><th>Type</th><th>Prefix</th><th>Use Case</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>User API Key</strong></td>
+        <td><code>flg_</code></td>
+        <td>CLI and API access for your account</td>
+      </tr>
+      <tr>
+        <td><strong>JWT Token</strong></td>
+        <td><code>eyJ...</code></td>
+        <td>Returned from login/signup, valid for 7 days</td>
+      </tr>
+      <tr>
+        <td><strong>Project API Key</strong></td>
+        <td><code>ffl_proj_</code></td>
+        <td>Project-level operations (reserved for future use)</td>
+      </tr>
+      <tr>
+        <td><strong>Environment API Key</strong></td>
+        <td><code>ffl_env_</code></td>
+        <td>SDK flag evaluation (reserved for future use)</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <div class="note">
+    <p><strong>Tip:</strong> Use your User API Key (<code>flg_*</code>) for CLI and API access. It's shown only once during signup—store it securely!</p>
+  </div>
+  
+  <hr>
+  
+  <h2 id="errors">Error Handling</h2>
+  
+  <p>All errors return a JSON object with an <code>error</code> field:</p>
+  
+  <Code code={`{
+  "error": "Error message here"
+}`} lang="json" theme="github-dark" />
+  
+  <h4>HTTP Status Codes</h4>
+  
+  <table>
+    <thead>
+      <tr><th>Code</th><th>Meaning</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>200</code></td><td>Success</td></tr>
+      <tr><td><code>201</code></td><td>Created</td></tr>
+      <tr><td><code>400</code></td><td>Bad Request - Invalid input</td></tr>
+      <tr><td><code>401</code></td><td>Unauthorized - Invalid or missing credentials</td></tr>
+      <tr><td><code>404</code></td><td>Not Found - Resource doesn't exist</td></tr>
+      <tr><td><code>409</code></td><td>Conflict - Resource already exists</td></tr>
+      <tr><td><code>500</code></td><td>Internal Server Error</td></tr>
+    </tbody>
+  </table>
+  
+  <hr>
+  
+  <h2 id="auth-endpoints">Auth Endpoints</h2>
+  
+  <!-- POST /v1/auth/signup -->
+  <h3>Create Account</h3>
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <span class="endpoint">/v1/auth/signup</span>
+  </div>
+  <p>Create a new user account. No email required—usernames are auto-generated if not provided.</p>
+  
+  <h4>Request Body</h4>
+  <table>
+    <thead>
+      <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>password</code><span class="param-required">*</span></td>
+        <td>string</td>
+        <td>Password (min 8 characters)</td>
+      </tr>
+      <tr>
+        <td><code>username</code><span class="param-optional">optional</span></td>
+        <td>string</td>
+        <td>Custom username (auto-generated like <code>brave-otter</code> if omitted)</td>
+      </tr>
+      <tr>
+        <td><code>project_name</code><span class="param-optional">optional</span></td>
+        <td>string</td>
+        <td>Name for your first project (defaults to "default")</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h4>Example Request</h4>
+  <Code code={`curl -X POST https://api.flaglite.dev/v1/auth/signup \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "password": "securePassword123"
+  }'`} lang="bash" theme="github-dark" />
+  
+  <h4>Example Response</h4>
+  <Code code={`{
+  "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "username": "brave-otter",
+    "email": null,
+    "created_at": "2026-02-05T19:00:00Z"
+  },
+  "api_key": {
+    "id": "key-id-here",
+    "key": "flg_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+    "key_prefix": "flg_a1b2c3d4",
+    "name": "Default API Key",
+    "created_at": "2026-02-05T19:00:00Z"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "project": {
+    "id": "660e8400-e29b-41d4-a716-446655440001",
+    "name": "default",
+    "slug": "default",
+    "created_at": "2026-02-05T19:00:00Z",
+    "updated_at": "2026-02-05T19:00:00Z"
+  },
+  "environments": [
+    { "id": "env-1", "name": "development", "api_key": "ffl_env_dev..." },
+    { "id": "env-2", "name": "staging", "api_key": "ffl_env_stg..." },
+    { "id": "env-3", "name": "production", "api_key": "ffl_env_prd..." }
+  ]
+}`} lang="json" theme="github-dark" />
+  
+  <div class="warning">
+    <p><strong>Important:</strong> The <code>api_key.key</code> is only shown once. Store it securely!</p>
+  </div>
+  
+  <!-- POST /v1/auth/login -->
+  <h3>Login</h3>
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <span class="endpoint">/v1/auth/login</span>
+  </div>
+  <p>Authenticate with username and password to get a JWT token.</p>
+  
+  <h4>Request Body</h4>
+  <table>
+    <thead>
+      <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>username</code><span class="param-required">*</span></td>
+        <td>string</td>
+        <td>Your username</td>
+      </tr>
+      <tr>
+        <td><code>password</code><span class="param-required">*</span></td>
+        <td>string</td>
+        <td>Your password</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h4>Example Request</h4>
+  <Code code={`curl -X POST https://api.flaglite.dev/v1/auth/login \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "username": "brave-otter",
+    "password": "securePassword123"
+  }'`} lang="bash" theme="github-dark" />
+  
+  <h4>Example Response</h4>
+  <Code code={`{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "username": "brave-otter",
+    "email": null,
+    "created_at": "2026-02-05T19:00:00Z"
+  }
+}`} lang="json" theme="github-dark" />
+  
+  <!-- GET /v1/auth/me -->
+  <h3>Get Current User</h3>
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <span class="endpoint">/v1/auth/me</span>
+  </div>
+  <p>Get the authenticated user's profile. Requires authentication.</p>
+  
+  <h4>Example Request</h4>
+  <Code code={`curl https://api.flaglite.dev/v1/auth/me \\
+  -H "Authorization: Bearer flg_your_api_key"`} lang="bash" theme="github-dark" />
+  
+  <h4>Example Response</h4>
+  <Code code={`{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "username": "brave-otter",
+  "email": "user@example.com",
+  "created_at": "2026-02-05T19:00:00Z"
+}`} lang="json" theme="github-dark" />
+  
+  <!-- PATCH /v1/auth/me -->
+  <h3>Update Current User</h3>
+  <div class="endpoint-header">
+    <span class="method method-patch">PATCH</span>
+    <span class="endpoint">/v1/auth/me</span>
+  </div>
+  <p>Update the authenticated user's profile. Requires authentication.</p>
+  
+  <h4>Request Body</h4>
+  <table>
+    <thead>
+      <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>email</code><span class="param-optional">optional</span></td>
+        <td>string</td>
+        <td>New email address</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h4>Example Request</h4>
+  <Code code={`curl -X PATCH https://api.flaglite.dev/v1/auth/me \\
+  -H "Authorization: Bearer flg_your_api_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "email": "newemail@example.com"
+  }'`} lang="bash" theme="github-dark" />
+  
+  <hr>
+  
+  <h2 id="project-endpoints">Project Endpoints</h2>
+  
+  <!-- GET /v1/projects -->
+  <h3>List Projects</h3>
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <span class="endpoint">/v1/projects</span>
+  </div>
+  <p>List all projects for the authenticated user.</p>
+  
+  <h4>Example Request</h4>
+  <Code code={`curl https://api.flaglite.dev/v1/projects \\
+  -H "Authorization: Bearer flg_your_api_key"`} lang="bash" theme="github-dark" />
+  
+  <h4>Example Response</h4>
+  <Code code={`[
+  {
+    "id": "660e8400-e29b-41d4-a716-446655440001",
+    "name": "my-project",
+    "description": null,
+    "slug": "my-project",
+    "created_at": "2026-02-05T19:00:00Z",
+    "updated_at": "2026-02-05T19:00:00Z"
+  }
+]`} lang="json" theme="github-dark" />
+  
+  <!-- POST /v1/projects -->
+  <h3>Create Project</h3>
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <span class="endpoint">/v1/projects</span>
+  </div>
+  <p>Create a new project. Three default environments (development, staging, production) are created automatically.</p>
+  
+  <h4>Request Body</h4>
+  <table>
+    <thead>
+      <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>name</code><span class="param-required">*</span></td>
+        <td>string</td>
+        <td>Project name (max 255 characters)</td>
+      </tr>
+      <tr>
+        <td><code>description</code><span class="param-optional">optional</span></td>
+        <td>string</td>
+        <td>Project description</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h4>Example Request</h4>
+  <Code code={`curl -X POST https://api.flaglite.dev/v1/projects \\
+  -H "Authorization: Bearer flg_your_api_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "my-app"
+  }'`} lang="bash" theme="github-dark" />
+  
+  <h4>Example Response</h4>
+  <Code code={`{
+  "id": "770e8400-e29b-41d4-a716-446655440002",
+  "name": "my-app",
+  "description": null,
+  "slug": "my-app",
+  "created_at": "2026-02-05T19:05:00Z",
+  "updated_at": "2026-02-05T19:05:00Z"
+}`} lang="json" theme="github-dark" />
+  
+  <!-- GET /v1/projects/:project_id/environments -->
+  <h3>List Environments</h3>
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <span class="endpoint">/v1/projects/:project_id/environments</span>
+  </div>
+  <p>List all environments for a project.</p>
+  
+  <h4>Path Parameters</h4>
+  <table>
+    <thead>
+      <tr><th>Parameter</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>project_id</code></td>
+        <td>Project UUID</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h4>Example Request</h4>
+  <Code code={`curl https://api.flaglite.dev/v1/projects/PROJECT_ID/environments \\
+  -H "Authorization: Bearer flg_your_api_key"`} lang="bash" theme="github-dark" />
+  
+  <h4>Example Response</h4>
+  <Code code={`[
+  {
+    "id": "880e8400-e29b-41d4-a716-446655440003",
+    "name": "development",
+    "slug": "development",
+    "project_id": "660e8400-e29b-41d4-a716-446655440001",
+    "is_production": false,
+    "created_at": "2026-02-05T19:00:00Z"
+  },
+  {
+    "id": "880e8400-e29b-41d4-a716-446655440004",
+    "name": "staging",
+    "slug": "staging",
+    "project_id": "660e8400-e29b-41d4-a716-446655440001",
+    "is_production": false,
+    "created_at": "2026-02-05T19:00:00Z"
+  },
+  {
+    "id": "880e8400-e29b-41d4-a716-446655440005",
+    "name": "production",
+    "slug": "production",
+    "project_id": "660e8400-e29b-41d4-a716-446655440001",
+    "is_production": true,
+    "created_at": "2026-02-05T19:00:00Z"
+  }
+]`} lang="json" theme="github-dark" />
+  
+  <hr>
+  
+  <h2 id="flag-endpoints">Flag Endpoints</h2>
+  
+  <!-- GET /v1/projects/:project_id/flags -->
+  <h3>List Flags</h3>
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <span class="endpoint">/v1/projects/:project_id/flags</span>
+  </div>
+  <p>List all flags for a project with their current state.</p>
+  
+  <h4>Path Parameters</h4>
+  <table>
+    <thead>
+      <tr><th>Parameter</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>project_id</code></td>
+        <td>Project UUID</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h4>Query Parameters</h4>
+  <table>
+    <thead>
+      <tr><th>Parameter</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>environment</code></td>
+        <td><code>production</code></td>
+        <td>Environment to get flag state for</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h4>Example Request</h4>
+  <Code code={`curl "https://api.flaglite.dev/v1/projects/PROJECT_ID/flags?environment=development" \\
+  -H "Authorization: Bearer flg_your_api_key"`} lang="bash" theme="github-dark" />
+  
+  <h4>Example Response</h4>
+  <Code code={`[
+  {
+    "id": "990e8400-e29b-41d4-a716-446655440006",
+    "key": "new-checkout",
+    "name": "New Checkout Flow",
+    "description": "Redesigned checkout experience",
+    "flag_type": "boolean",
+    "project_id": "660e8400-e29b-41d4-a716-446655440001",
+    "created_at": "2026-02-05T19:10:00Z",
+    "updated_at": "2026-02-05T19:10:00Z",
+    "enabled": true,
+    "value": null
+  },
+  {
+    "id": "990e8400-e29b-41d4-a716-446655440007",
+    "key": "dark-mode",
+    "name": "Dark Mode",
+    "description": null,
+    "flag_type": "boolean",
+    "project_id": "660e8400-e29b-41d4-a716-446655440001",
+    "created_at": "2026-02-05T19:15:00Z",
+    "updated_at": "2026-02-05T19:15:00Z",
+    "enabled": false,
+    "value": null
+  }
+]`} lang="json" theme="github-dark" />
+  
+  <!-- POST /v1/projects/:project_id/flags -->
+  <h3>Create Flag</h3>
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <span class="endpoint">/v1/projects/:project_id/flags</span>
+  </div>
+  <p>Create a new feature flag. The flag is created with values for all environments.</p>
+  
+  <h4>Path Parameters</h4>
+  <table>
+    <thead>
+      <tr><th>Parameter</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>project_id</code></td>
+        <td>Project UUID</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h4>Request Body</h4>
+  <table>
+    <thead>
+      <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>key</code><span class="param-required">*</span></td>
+        <td>string</td>
+        <td>Unique flag key (alphanumeric, hyphens, underscores only)</td>
+      </tr>
+      <tr>
+        <td><code>name</code><span class="param-required">*</span></td>
+        <td>string</td>
+        <td>Human-readable flag name</td>
+      </tr>
+      <tr>
+        <td><code>description</code><span class="param-optional">optional</span></td>
+        <td>string</td>
+        <td>Flag description</td>
+      </tr>
+      <tr>
+        <td><code>enabled</code><span class="param-optional">optional</span></td>
+        <td>boolean</td>
+        <td>Initial enabled state (default: <code>false</code>)</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h4>Example Request</h4>
+  <Code code={`curl -X POST https://api.flaglite.dev/v1/projects/PROJECT_ID/flags \\
+  -H "Authorization: Bearer flg_your_api_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "key": "new-feature",
+    "name": "New Feature",
+    "description": "My awesome new feature",
+    "enabled": false
+  }'`} lang="bash" theme="github-dark" />
+  
+  <h4>Example Response</h4>
+  <Code code={`{
+  "id": "aa0e8400-e29b-41d4-a716-446655440008",
+  "key": "new-feature",
+  "name": "New Feature",
+  "description": "My awesome new feature",
+  "flag_type": "boolean",
+  "project_id": "660e8400-e29b-41d4-a716-446655440001",
+  "created_at": "2026-02-05T19:20:00Z",
+  "updated_at": "2026-02-05T19:20:00Z"
+}`} lang="json" theme="github-dark" />
+  
+  <!-- GET /v1/projects/:project_id/flags/:key -->
+  <h3>Get Flag</h3>
+  <div class="endpoint-header">
+    <span class="method method-get">GET</span>
+    <span class="endpoint">/v1/projects/:project_id/flags/:key</span>
+  </div>
+  <p>Get a specific flag by its key.</p>
+  
+  <h4>Path Parameters</h4>
+  <table>
+    <thead>
+      <tr><th>Parameter</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>project_id</code></td>
+        <td>Project UUID</td>
+      </tr>
+      <tr>
+        <td><code>key</code></td>
+        <td>Flag key</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h4>Query Parameters</h4>
+  <table>
+    <thead>
+      <tr><th>Parameter</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>environment</code></td>
+        <td><code>production</code></td>
+        <td>Environment to get flag state for</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h4>Example Request</h4>
+  <Code code={`curl "https://api.flaglite.dev/v1/projects/PROJECT_ID/flags/new-feature?environment=development" \\
+  -H "Authorization: Bearer flg_your_api_key"`} lang="bash" theme="github-dark" />
+  
+  <h4>Example Response</h4>
+  <Code code={`{
+  "id": "aa0e8400-e29b-41d4-a716-446655440008",
+  "key": "new-feature",
+  "name": "New Feature",
+  "description": "My awesome new feature",
+  "flag_type": "boolean",
+  "project_id": "660e8400-e29b-41d4-a716-446655440001",
+  "created_at": "2026-02-05T19:20:00Z",
+  "updated_at": "2026-02-05T19:20:00Z",
+  "enabled": true,
+  "value": null
+}`} lang="json" theme="github-dark" />
+  
+  <!-- POST /v1/projects/:project_id/flags/:key/toggle -->
+  <h3>Toggle Flag</h3>
+  <div class="endpoint-header">
+    <span class="method method-post">POST</span>
+    <span class="endpoint">/v1/projects/:project_id/flags/:key/toggle</span>
+  </div>
+  <p>Toggle a flag's enabled state for a specific environment.</p>
+  
+  <h4>Path Parameters</h4>
+  <table>
+    <thead>
+      <tr><th>Parameter</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>project_id</code></td>
+        <td>Project UUID</td>
+      </tr>
+      <tr>
+        <td><code>key</code></td>
+        <td>Flag key</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h4>Query Parameters</h4>
+  <table>
+    <thead>
+      <tr><th>Parameter</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>environment</code><span class="param-required">*</span></td>
+        <td>Environment to toggle flag in (development, staging, production)</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h4>Example Request</h4>
+  <Code code={`curl -X POST "https://api.flaglite.dev/v1/projects/PROJECT_ID/flags/new-feature/toggle?environment=production" \\
+  -H "Authorization: Bearer flg_your_api_key"`} lang="bash" theme="github-dark" />
+  
+  <h4>Example Response</h4>
+  <Code code={`{
+  "id": "aa0e8400-e29b-41d4-a716-446655440008",
+  "key": "new-feature",
+  "name": "New Feature",
+  "description": "My awesome new feature",
+  "flag_type": "boolean",
+  "project_id": "660e8400-e29b-41d4-a716-446655440001",
+  "created_at": "2026-02-05T19:20:00Z",
+  "updated_at": "2026-02-05T19:20:00Z",
+  "enabled": true,
+  "value": null
+}`} lang="json" theme="github-dark" />
+  
+  <!-- DELETE /v1/projects/:project_id/flags/:key -->
+  <h3>Delete Flag</h3>
+  <div class="endpoint-header">
+    <span class="method method-delete">DELETE</span>
+    <span class="endpoint">/v1/projects/:project_id/flags/:key</span>
+  </div>
+  <p>Delete a feature flag. This also deletes all flag values across environments.</p>
+  
+  <h4>Path Parameters</h4>
+  <table>
+    <thead>
+      <tr><th>Parameter</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>project_id</code></td>
+        <td>Project UUID</td>
+      </tr>
+      <tr>
+        <td><code>key</code></td>
+        <td>Flag key</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <h4>Example Request</h4>
+  <Code code={`curl -X DELETE https://api.flaglite.dev/v1/projects/PROJECT_ID/flags/new-feature \\
+  -H "Authorization: Bearer flg_your_api_key"`} lang="bash" theme="github-dark" />
+  
+  <h4>Response</h4>
+  <p>Returns <code>200 OK</code> with no body on success.</p>
+  
+  <hr>
+  
+  <p>Need help? <a href="https://github.com/faiscadev/flaglite">GitHub</a> · <a href="/docs/quickstart">Quickstart Guide</a></p>
+</body>
+</html>
