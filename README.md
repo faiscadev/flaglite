@@ -81,7 +81,7 @@ export JWT_SECRET=$(openssl rand -hex 32)
 
 Don't want to self-host? Use FlagLite Cloud.
 
-→ [Sign up at flaglite.dev](https://flaglite.dev/signup)
+→ [Get started at flaglite.dev](https://flaglite.dev/#quickstart)
 
 ---
 
