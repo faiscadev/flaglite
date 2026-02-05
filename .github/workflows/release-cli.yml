@@ -27,7 +27,7 @@ jobs:
             use_cross: true
 
           - target: x86_64-apple-darwin
-            os: macos-13
+            os: macos-latest
             artifact: flaglite-macos-amd64
             use_cross: false
 
