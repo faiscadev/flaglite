@@ -1,9 +1,10 @@
 use async_trait::async_trait;
+use chrono::Utc;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 
 use crate::error::Result;
-use crate::models::{Environment, Flag, FlagValue, Project, User};
+use crate::models::{ApiKey, Environment, Flag, FlagValue, Project, User};
 use super::Storage;
 
 pub struct PostgresStorage {
@@ -27,22 +28,24 @@ impl Storage for PostgresStorage {
 
     async fn create_user(&self, user: &User) -> Result<()> {
         sqlx::query(
-            "INSERT INTO users (id, email, password_hash, created_at) VALUES ($1, $2, $3, $4)",
+            "INSERT INTO users (id, username, password_hash, email, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
         )
         .bind(&user.id)
-        .bind(&user.email)
+        .bind(&user.username)
         .bind(&user.password_hash)
+        .bind(&user.email)
         .bind(user.created_at)
+        .bind(user.updated_at)
         .execute(&self.pool)
         .await?;
         Ok(())
     }
 
-    async fn get_user_by_email(&self, email: &str) -> Result<Option<User>> {
+    async fn get_user_by_username(&self, username: &str) -> Result<Option<User>> {
         let user = sqlx::query_as(
-            "SELECT id, email, password_hash, created_at FROM users WHERE email = $1",
+            "SELECT id, username, password_hash, email, created_at, updated_at FROM users WHERE username = $1",
         )
-        .bind(email)
+        .bind(username)
         .fetch_optional(&self.pool)
         .await?;
         Ok(user)
@@ -50,12 +53,83 @@ impl Storage for PostgresStorage {
 
     async fn get_user_by_id(&self, id: &str) -> Result<Option<User>> {
         let user = sqlx::query_as(
-            "SELECT id, email, password_hash, created_at FROM users WHERE id = $1",
+            "SELECT id, username, password_hash, email, created_at, updated_at FROM users WHERE id = $1",
         )
         .bind(id)
         .fetch_optional(&self.pool)
         .await?;
         Ok(user)
+    }
+
+    async fn update_user(&self, user: &User) -> Result<()> {
+        sqlx::query(
+            "UPDATE users SET email = $1, updated_at = $2 WHERE id = $3",
+        )
+        .bind(&user.email)
+        .bind(user.updated_at)
+        .bind(&user.id)
+        .execute(&self.pool)
+        .await?;
+        Ok(())
+    }
+
+    async fn username_exists(&self, username: &str) -> Result<bool> {
+        let result: (i64,) = sqlx::query_as(
+            "SELECT COUNT(*) FROM users WHERE username = $1",
+        )
+        .bind(username)
+        .fetch_one(&self.pool)
+        .await?;
+        Ok(result.0 > 0)
+    }
+
+    // ============ API Keys ============
+
+    async fn create_api_key(&self, api_key: &ApiKey) -> Result<()> {
+        sqlx::query(
+            "INSERT INTO api_keys (id, user_id, key_hash, key_prefix, name, created_at, revoked_at) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+        )
+        .bind(&api_key.id)
+        .bind(&api_key.user_id)
+        .bind(&api_key.key_hash)
+        .bind(&api_key.key_prefix)
+        .bind(&api_key.name)
+        .bind(api_key.created_at)
+        .bind(api_key.revoked_at)
+        .execute(&self.pool)
+        .await?;
+        Ok(())
+    }
+
+    async fn get_api_key_by_hash(&self, key_hash: &str) -> Result<Option<ApiKey>> {
+        let api_key = sqlx::query_as(
+            "SELECT id, user_id, key_hash, key_prefix, name, created_at, revoked_at FROM api_keys WHERE key_hash = $1 AND revoked_at IS NULL",
+        )
+        .bind(key_hash)
+        .fetch_optional(&self.pool)
+        .await?;
+        Ok(api_key)
+    }
+
+    async fn list_api_keys_by_user(&self, user_id: &str) -> Result<Vec<ApiKey>> {
+        let keys = sqlx::query_as(
+            "SELECT id, user_id, key_hash, key_prefix, name, created_at, revoked_at FROM api_keys WHERE user_id = $1 ORDER BY created_at DESC",
+        )
+        .bind(user_id)
+        .fetch_all(&self.pool)
+        .await?;
+        Ok(keys)
+    }
+
+    async fn revoke_api_key(&self, id: &str) -> Result<()> {
+        sqlx::query(
+            "UPDATE api_keys SET revoked_at = $1 WHERE id = $2",
+        )
+        .bind(Utc::now())
+        .bind(id)
+        .execute(&self.pool)
+        .await?;
+        Ok(())
     }
 
     // ============ Projects ============
@@ -290,14 +364,33 @@ impl Storage for PostgresStorage {
     async fn run_migrations(&self) -> Result<()> {
         tracing::info!("Running database migrations (PostgreSQL)...");
 
-        // Create users table
+        // Create users table with username-based auth
         sqlx::query(
             r#"
             CREATE TABLE IF NOT EXISTS users (
                 id TEXT PRIMARY KEY,
-                email TEXT UNIQUE NOT NULL,
+                username TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
-                created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+                email TEXT,
+                created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+            )
+            "#,
+        )
+        .execute(&self.pool)
+        .await?;
+
+        // Create api_keys table for user API keys
+        sqlx::query(
+            r#"
+            CREATE TABLE IF NOT EXISTS api_keys (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                key_hash TEXT NOT NULL,
+                key_prefix TEXT NOT NULL,
+                name TEXT,
+                created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+                revoked_at TIMESTAMP WITH TIME ZONE
             )
             "#,
         )
@@ -370,6 +463,15 @@ impl Storage for PostgresStorage {
         .await?;
 
         // Create indexes
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)")
+            .execute(&self.pool)
+            .await?;
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_api_keys_user ON api_keys(user_id)")
+            .execute(&self.pool)
+            .await?;
+        sqlx::query("CREATE INDEX IF NOT EXISTS idx_api_keys_hash ON api_keys(key_hash)")
+            .execute(&self.pool)
+            .await?;
         sqlx::query("CREATE INDEX IF NOT EXISTS idx_projects_user ON projects(user_id)")
             .execute(&self.pool)
             .await?;

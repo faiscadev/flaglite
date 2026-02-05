@@ -4,6 +4,7 @@ mod handlers;
 mod models;
 mod auth;
 mod storage;
+mod username;
 
 use axum::{
     routing::{get, patch, post},
@@ -100,7 +101,7 @@ fn create_router(state: models::AppState) -> Router {
         // Auth routes
         .route("/v1/auth/signup", post(handlers::auth::signup))
         .route("/v1/auth/login", post(handlers::auth::login))
-        .route("/v1/auth/me", get(handlers::auth::me))
+        .route("/v1/auth/me", get(handlers::auth::me).patch(handlers::auth::update_me))
         // Flag routes
         .route("/v1/flags", get(handlers::flags::list_flags))
         .route("/v1/flags", post(handlers::flags::create_flag))

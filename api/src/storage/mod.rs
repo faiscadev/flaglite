@@ -1,7 +1,7 @@
 // Storage abstraction module - v2
 use async_trait::async_trait;
 use crate::error::Result;
-use crate::models::{Environment, Flag, FlagValue, Project, User};
+use crate::models::{ApiKey, Environment, Flag, FlagValue, Project, User};
 
 pub mod postgres;
 pub mod sqlite;
@@ -15,8 +15,16 @@ pub use sqlite::SqliteStorage;
 pub trait Storage: Send + Sync {
     // Users
     async fn create_user(&self, user: &User) -> Result<()>;
-    async fn get_user_by_email(&self, email: &str) -> Result<Option<User>>;
+    async fn get_user_by_username(&self, username: &str) -> Result<Option<User>>;
     async fn get_user_by_id(&self, id: &str) -> Result<Option<User>>;
+    async fn update_user(&self, user: &User) -> Result<()>;
+    async fn username_exists(&self, username: &str) -> Result<bool>;
+
+    // API Keys
+    async fn create_api_key(&self, api_key: &ApiKey) -> Result<()>;
+    async fn get_api_key_by_hash(&self, key_hash: &str) -> Result<Option<ApiKey>>;
+    async fn list_api_keys_by_user(&self, user_id: &str) -> Result<Vec<ApiKey>>;
+    async fn revoke_api_key(&self, id: &str) -> Result<()>;
 
     // Projects
     async fn create_project(&self, project: &Project) -> Result<()>;

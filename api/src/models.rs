@@ -17,15 +17,18 @@ pub struct AppState {
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct User {
     pub id: String, // UUID stored as string for SQLite compat
-    pub email: String,
+    pub username: String,
     pub password_hash: String,
+    pub email: Option<String>,
     pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Serialize)]
 pub struct UserResponse {
     pub id: String,
-    pub email: String,
+    pub username: String,
+    pub email: Option<String>,
     pub created_at: DateTime<Utc>,
 }
 
@@ -33,10 +36,53 @@ impl From<User> for UserResponse {
     fn from(user: User) -> Self {
         UserResponse {
             id: user.id,
+            username: user.username,
             email: user.email,
             created_at: user.created_at,
         }
     }
+}
+
+// ============ API Key ============
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
+pub struct ApiKey {
+    pub id: String,
+    pub user_id: String,
+    pub key_hash: String,
+    pub key_prefix: String, // First 8 chars for display (e.g., "flg_a1b2")
+    pub name: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub revoked_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct ApiKeyResponse {
+    pub id: String,
+    pub key_prefix: String,
+    pub name: Option<String>,
+    pub created_at: DateTime<Utc>,
+}
+
+impl From<ApiKey> for ApiKeyResponse {
+    fn from(key: ApiKey) -> Self {
+        ApiKeyResponse {
+            id: key.id,
+            key_prefix: key.key_prefix,
+            name: key.name,
+            created_at: key.created_at,
+        }
+    }
+}
+
+/// Response returned only on API key creation (includes full key)
+#[derive(Debug, Serialize)]
+pub struct ApiKeyCreatedResponse {
+    pub id: String,
+    pub key: String, // Full key - only shown once
+    pub key_prefix: String,
+    pub name: Option<String>,
+    pub created_at: DateTime<Utc>,
 }
 
 // ============ Project ============
@@ -152,9 +198,18 @@ pub struct FlagToggleResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct SignupRequest {
-    pub email: String,
+    pub username: Option<String>, // Optional - auto-generated if not provided
     pub password: String,
     pub project_name: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct SignupResponse {
+    pub user: UserResponse,
+    pub api_key: ApiKeyCreatedResponse,
+    pub token: String,
+    pub project: Option<ProjectResponse>,
+    pub environments: Option<Vec<EnvironmentResponse>>,
 }
 
 #[derive(Debug, Serialize)]
@@ -167,8 +222,13 @@ pub struct AuthResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct LoginRequest {
-    pub email: String,
+    pub username: String,
     pub password: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateUserRequest {
+    pub email: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -199,15 +259,15 @@ pub struct EvaluateFlagQuery {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
     pub sub: String, // user_id
-    pub email: String,
+    pub username: String,
     pub exp: i64,
     pub iat: i64,
 }
 
 // ============ API Key Types ============
 
-pub fn generate_project_api_key() -> String {
-    let random: String = (0..32)
+fn generate_random_alphanumeric(len: usize) -> String {
+    (0..len)
         .map(|_| {
             let idx = rand::random::<usize>() % 36;
             if idx < 10 {
@@ -216,22 +276,26 @@ pub fn generate_project_api_key() -> String {
                 (b'a' + (idx - 10) as u8) as char
             }
         })
-        .collect();
-    format!("ffl_proj_{}", random)
+        .collect()
+}
+
+/// Generate user API key with flg_ prefix (32 random alphanumeric chars)
+/// Example: flg_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+pub fn generate_user_api_key() -> String {
+    format!("flg_{}", generate_random_alphanumeric(32))
+}
+
+pub fn generate_project_api_key() -> String {
+    format!("ffl_proj_{}", generate_random_alphanumeric(32))
 }
 
 pub fn generate_env_api_key() -> String {
-    let random: String = (0..32)
-        .map(|_| {
-            let idx = rand::random::<usize>() % 36;
-            if idx < 10 {
-                (b'0' + idx as u8) as char
-            } else {
-                (b'a' + (idx - 10) as u8) as char
-            }
-        })
-        .collect();
-    format!("ffl_env_{}", random)
+    format!("ffl_env_{}", generate_random_alphanumeric(32))
+}
+
+/// Check if key is a user API key (flg_ prefix)
+pub fn is_user_api_key(key: &str) -> bool {
+    key.starts_with("flg_")
 }
 
 #[allow(dead_code)]

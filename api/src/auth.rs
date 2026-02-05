@@ -1,5 +1,9 @@
 use crate::error::{AppError, Result};
-use crate::models::{AppState, Claims, Environment, Project, User};
+use crate::models::{AppState, Claims, Environment, Project, User, is_user_api_key};
+use argon2::{
+    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    Argon2,
+};
 use axum::{
     async_trait,
     extract::FromRequestParts,
@@ -7,6 +11,7 @@ use axum::{
 };
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use chrono::Utc;
+use sha2::{Sha256, Digest};
 
 const JWT_EXPIRY_DAYS: i64 = 7;
 
@@ -16,7 +21,7 @@ pub fn create_jwt(user: &User, secret: &str) -> Result<String> {
 
     let claims = Claims {
         sub: user.id.clone(),
-        email: user.email.clone(),
+        username: user.username.clone(),
         iat: now,
         exp: expiry,
     };
@@ -40,14 +45,32 @@ pub fn verify_jwt(token: &str, secret: &str) -> Result<Claims> {
     Ok(token_data.claims)
 }
 
+/// Hash a password using Argon2id
 pub fn hash_password(password: &str) -> Result<String> {
-    bcrypt::hash(password, bcrypt::DEFAULT_COST)
+    let salt = SaltString::generate(&mut OsRng);
+    let argon2 = Argon2::default();
+    
+    argon2
+        .hash_password(password.as_bytes(), &salt)
+        .map(|hash| hash.to_string())
         .map_err(|e| AppError::Internal(format!("Password hash error: {}", e)))
 }
 
+/// Verify a password against an Argon2 hash
 pub fn verify_password(password: &str, hash: &str) -> Result<bool> {
-    bcrypt::verify(password, hash)
-        .map_err(|e| AppError::Internal(format!("Password verify error: {}", e)))
+    let parsed_hash = PasswordHash::new(hash)
+        .map_err(|e| AppError::Internal(format!("Invalid password hash: {}", e)))?;
+    
+    Ok(Argon2::default()
+        .verify_password(password.as_bytes(), &parsed_hash)
+        .is_ok())
+}
+
+/// Hash an API key using SHA256 for storage
+pub fn hash_api_key(key: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(key.as_bytes());
+    format!("{:x}", hasher.finalize())
 }
 
 // ============ Extractors ============
@@ -70,6 +93,25 @@ impl FromRequestParts<AppState> for AuthUser {
             .strip_prefix("Bearer ")
             .ok_or(AppError::Unauthorized)?;
 
+        // Check if it's a user API key (flg_ prefix)
+        if is_user_api_key(token) {
+            let key_hash = hash_api_key(token);
+            let api_key = state
+                .storage
+                .get_api_key_by_hash(&key_hash)
+                .await?
+                .ok_or(AppError::InvalidApiKey)?;
+
+            let user = state
+                .storage
+                .get_user_by_id(&api_key.user_id)
+                .await?
+                .ok_or(AppError::Unauthorized)?;
+
+            return Ok(AuthUser(user));
+        }
+
+        // Otherwise treat as JWT
         let claims = verify_jwt(token, &state.jwt_secret)?;
 
         let user = state
@@ -82,7 +124,7 @@ impl FromRequestParts<AppState> for AuthUser {
     }
 }
 
-/// Extracts project from project API key or JWT
+/// Extracts project from project API key, user API key, or JWT
 pub struct AuthProject(pub Project);
 
 #[async_trait]
@@ -107,6 +149,24 @@ impl FromRequestParts<AppState> for AuthProject {
                 .get_project_by_api_key(token)
                 .await?
                 .ok_or(AppError::InvalidApiKey)?;
+
+            return Ok(AuthProject(project));
+        }
+
+        // Check if it's a user API key (flg_ prefix)
+        if is_user_api_key(token) {
+            let key_hash = hash_api_key(token);
+            let api_key = state
+                .storage
+                .get_api_key_by_hash(&key_hash)
+                .await?
+                .ok_or(AppError::InvalidApiKey)?;
+
+            let project = state
+                .storage
+                .get_first_project_by_user(&api_key.user_id)
+                .await?
+                .ok_or(AppError::NotFound("No project found".to_string()))?;
 
             return Ok(AuthProject(project));
         }
@@ -164,7 +224,7 @@ impl FromRequestParts<AppState> for AuthEnvironment {
     }
 }
 
-/// Flexible auth - accepts either project key, env key, or JWT
+/// Flexible auth - accepts project key, env key, user API key, or JWT
 pub enum FlexAuth {
     Project(Project),
     Environment(Environment, Project),
@@ -209,6 +269,24 @@ impl FromRequestParts<AppState> for FlexAuth {
                 .ok_or(AppError::Internal("Project not found for environment".to_string()))?;
 
             return Ok(FlexAuth::Environment(env, project));
+        }
+
+        // Check if it's a user API key (flg_ prefix)
+        if is_user_api_key(token) {
+            let key_hash = hash_api_key(token);
+            let api_key = state
+                .storage
+                .get_api_key_by_hash(&key_hash)
+                .await?
+                .ok_or(AppError::InvalidApiKey)?;
+
+            let project = state
+                .storage
+                .get_first_project_by_user(&api_key.user_id)
+                .await?
+                .ok_or(AppError::NotFound("No project found".to_string()))?;
+
+            return Ok(FlexAuth::Project(project));
         }
 
         // JWT auth
