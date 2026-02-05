@@ -1,4 +1,15 @@
 ---
-// Redirect /docs to /docs/introduction
-return Astro.redirect('/docs/introduction', 301);
+// Docs coming soon — redirect to landing page
 ---
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="refresh" content="0; url=/">
+  <link rel="canonical" href="/">
+  <title>Redirecting to FlagLite</title>
+</head>
+<body>
+  <p>Docs coming soon. <a href="/">Go to FlagLite homepage</a>.</p>
+</body>
+</html>
