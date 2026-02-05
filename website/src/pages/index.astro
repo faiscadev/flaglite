@@ -1,12 +1,15 @@
-<!DOCTYPE html>
+---
+// FlagLite Landing Page
+import '../styles/landing.css';
+---
+
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FlagLite — Feature flags without the enterprise hangover</title>
   <meta name="description" content="Ship features safely with a 6.9MB binary. Open source (AGPL-3.0), self-host forever, first flag in 30 seconds.">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚩</text></svg>">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 </head>
 <body>
   <!-- Header -->
@@ -14,7 +17,7 @@
     <nav class="nav container">
       <a href="/" class="logo">🚩 FlagLite</a>
       <div class="nav-links">
-        <a href="https://flaglite.dev/docs">Docs</a>
+        <a href="/docs">Docs</a>
         <a href="https://github.com/faiscadev/flaglite">GitHub</a>
         <a href="#pricing">Pricing</a>
       </div>
@@ -27,7 +30,7 @@
       <h1>Feature flags without the enterprise hangover.</h1>
       <p class="subhead">Ship features safely with a 6.9MB binary. Open source (AGPL-3.0), self-host forever, first flag in 30 seconds. No PhD in YAML required.</p>
       <div class="cta-group">
-        <a href="https://flaglite.dev/docs/quickstart" class="btn btn-primary">Get Started →</a>
+        <a href="/docs/quickstart" class="btn btn-primary">Get Started →</a>
         <a href="https://github.com/faiscadev/flaglite" class="btn btn-secondary">View on GitHub</a>
       </div>
     </div>
@@ -41,12 +44,12 @@
       <div class="code-block">
         <div class="code-header">
           <span class="code-lang">bash</span>
-          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <button class="copy-btn">Copy</button>
         </div>
-        <pre><code>git clone https://github.com/faiscadev/flaglite && cd flaglite
+        <pre><code id="quickstart-code">git clone https://github.com/faiscadev/flaglite && cd flaglite
 docker compose up -d
 curl localhost:8080/v1/flags -H "Content-Type: application/json" \
-  -d '{"name": "dark-mode", "enabled": true}'</code></pre>
+  -d '&#123;"name": "dark-mode", "enabled": true&#125;'</code></pre>
       </div>
     </div>
   </section>
@@ -97,15 +100,15 @@ curl localhost:8080/v1/flags -H "Content-Type: application/json" \
           <div class="code-block">
             <div class="code-header">
               <span class="code-lang">javascript</span>
-              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              <button class="copy-btn">Copy</button>
             </div>
-            <pre><code>import { FlagLite } from '@faiscadev/flaglite';
+            <pre><code>import &#123; FlagLite &#125; from '@faiscadev/flaglite';
 
-const client = new FlagLite({ apiKey: 'your-api-key' });
+const client = new FlagLite(&#123; apiKey: 'your-api-key' &#125;);
 
-if (await client.evaluate('dark-mode', { userId: 'user-123' })) {
+if (await client.evaluate('dark-mode', &#123; userId: 'user-123' &#125;)) &#123;
   enableDarkMode();
-}</code></pre>
+&#125;</code></pre>
           </div>
         </div>
         
@@ -113,7 +116,7 @@ if (await client.evaluate('dark-mode', { userId: 'user-123' })) {
           <div class="code-block">
             <div class="code-header">
               <span class="code-lang">python</span>
-              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              <button class="copy-btn">Copy</button>
             </div>
             <pre><code>from flaglite import FlagLite
 
@@ -128,15 +131,15 @@ if client.evaluate("dark-mode", user_id="user-123"):
           <div class="code-block">
             <div class="code-header">
               <span class="code-lang">go</span>
-              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              <button class="copy-btn">Copy</button>
             </div>
             <pre><code>import "github.com/faiscadev/flaglite-go"
 
 client := flaglite.New("your-api-key")
 
-if enabled, _ := client.Evaluate("dark-mode", "user-123"); enabled {
+if enabled, _ := client.Evaluate("dark-mode", "user-123"); enabled &#123;
     enableDarkMode()
-}</code></pre>
+&#125;</code></pre>
           </div>
         </div>
         
@@ -144,15 +147,15 @@ if enabled, _ := client.Evaluate("dark-mode", "user-123"); enabled {
           <div class="code-block">
             <div class="code-header">
               <span class="code-lang">rust</span>
-              <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+              <button class="copy-btn">Copy</button>
             </div>
             <pre><code>use flaglite::FlagLite;
 
 let client = FlagLite::new("your-api-key");
 
-if client.evaluate("dark-mode", "user-123").await? {
+if client.evaluate("dark-mode", "user-123").await? &#123;
     enable_dark_mode();
-}</code></pre>
+&#125;</code></pre>
           </div>
         </div>
       </div>
@@ -253,7 +256,7 @@ if client.evaluate("dark-mode", "user-123").await? {
       <h2>Ready to ship?</h2>
       <p>First flag in 30 seconds. Seriously, we timed it.</p>
       <div class="cta-group">
-        <a href="https://flaglite.dev/docs/quickstart" class="btn btn-primary">Get Started →</a>
+        <a href="/docs/quickstart" class="btn btn-primary">Get Started →</a>
         <a href="https://github.com/faiscadev/flaglite" class="btn btn-secondary">View on GitHub</a>
       </div>
     </div>
@@ -269,7 +272,7 @@ if client.evaluate("dark-mode", "user-123").await? {
         </div>
         <div class="footer-links">
           <a href="https://github.com/faiscadev/flaglite">GitHub</a>
-          <a href="https://flaglite.dev/docs">Docs</a>
+          <a href="/docs">Docs</a>
           <a href="https://status.flaglite.dev">Status</a>
         </div>
       </div>
@@ -279,6 +282,55 @@ if client.evaluate("dark-mode", "user-123").await? {
     </div>
   </footer>
 
-  <script src="js/main.js"></script>
+  <script>
+    // Tab switching for SDK examples
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabId = tab.dataset.tab;
+        
+        // Update active tab
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        // Update active pane
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+      });
+    });
+
+    // Copy code to clipboard
+    document.querySelectorAll('.copy-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const codeBlock = button.closest('.code-block');
+        const code = codeBlock.querySelector('code').textContent;
+        
+        navigator.clipboard.writeText(code).then(() => {
+          const originalText = button.textContent;
+          button.textContent = 'Copied!';
+          button.style.color = 'var(--accent)';
+          button.style.borderColor = 'var(--accent)';
+          
+          setTimeout(() => {
+            button.textContent = originalText;
+            button.style.color = '';
+            button.style.borderColor = '';
+          }, 2000);
+        }).catch(err => {
+          console.error('Failed to copy:', err);
+        });
+      });
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
 </body>
 </html>
