@@ -10,6 +10,8 @@ import '../styles/landing.css';
   <title>FlagLite — Feature flags without the enterprise hangover</title>
   <meta name="description" content="Ship features safely with a 6.9MB binary. Open source (AGPL-3.0), self-host forever, first flag in 30 seconds.">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <!-- Syntax highlighting -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
 </head>
 <body>
   <!-- Header -->
@@ -46,7 +48,7 @@ import '../styles/landing.css';
           <span class="code-lang">bash</span>
           <button class="copy-btn">Copy</button>
         </div>
-        <pre><code id="quickstart-code">git clone https://github.com/faiscadev/flaglite && cd flaglite
+        <pre><code class="language-bash" id="quickstart-code">git clone https://github.com/faiscadev/flaglite && cd flaglite
 docker compose up -d
 curl localhost:8080/v1/flags -H "Content-Type: application/json" \
   -d '&#123;"name": "dark-mode", "enabled": true&#125;'</code></pre>
@@ -102,7 +104,7 @@ curl localhost:8080/v1/flags -H "Content-Type: application/json" \
               <span class="code-lang">javascript</span>
               <button class="copy-btn">Copy</button>
             </div>
-            <pre><code>import &#123; FlagLite &#125; from '@faiscadev/flaglite';
+            <pre><code class="language-javascript">import &#123; FlagLite &#125; from '@faiscadev/flaglite';
 
 const client = new FlagLite(&#123; apiKey: 'your-api-key' &#125;);
 
@@ -118,7 +120,7 @@ if (await client.evaluate('dark-mode', &#123; userId: 'user-123' &#125;)) &#123;
               <span class="code-lang">python</span>
               <button class="copy-btn">Copy</button>
             </div>
-            <pre><code>from flaglite import FlagLite
+            <pre><code class="language-python">from flaglite import FlagLite
 
 client = FlagLite(api_key="your-api-key")
 
@@ -133,7 +135,7 @@ if client.evaluate("dark-mode", user_id="user-123"):
               <span class="code-lang">go</span>
               <button class="copy-btn">Copy</button>
             </div>
-            <pre><code>import "github.com/faiscadev/flaglite-go"
+            <pre><code class="language-go">import "github.com/faiscadev/flaglite-go"
 
 client := flaglite.New("your-api-key")
 
@@ -149,7 +151,7 @@ if enabled, _ := client.Evaluate("dark-mode", "user-123"); enabled &#123;
               <span class="code-lang">rust</span>
               <button class="copy-btn">Copy</button>
             </div>
-            <pre><code>use flaglite::FlagLite;
+            <pre><code class="language-rust">use flaglite::FlagLite;
 
 let client = FlagLite::new("your-api-key");
 
@@ -332,5 +334,13 @@ if client.evaluate("dark-mode", "user-123").await? &#123;
       });
     });
   </script>
+  
+  <!-- Syntax highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-go.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
 </body>
 </html>
