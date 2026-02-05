@@ -146,6 +146,24 @@ body {
   color: var(--text-primary);
 }
 
+/* Theme icons - show moon in dark mode, sun in light mode */
+.theme-icon-light { display: none; }
+.theme-icon-dark { display: block; }
+
+[data-theme="light"] .theme-icon-light { display: block; }
+[data-theme="light"] .theme-icon-dark { display: none; }
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .theme-icon-light { display: block; }
+  :root:not([data-theme="dark"]) .theme-icon-dark { display: none; }
+}
+
+/* Logo icon styling */
+.logo-icon {
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
 /* Hero */
 .hero {
   padding: 160px 0 100px;

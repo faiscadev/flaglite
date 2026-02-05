@@ -27,13 +27,14 @@ import '../styles/landing.css';
   <!-- Header -->
   <header class="header">
     <nav class="nav container">
-      <a href="/" class="logo">🚩 FlagLite</a>
+      <a href="/" class="logo"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="logo-icon"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> FlagLite</a>
       <div class="nav-links">
         <a href="/docs">Docs</a>
         <a href="https://github.com/faiscadev/flaglite">GitHub</a>
         <a href="#pricing">Pricing</a>
         <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
-          <span class="theme-icon">🌙</span>
+          <svg class="theme-icon theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg class="theme-icon theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
         </button>
       </div>
     </nav>
@@ -61,15 +62,18 @@ import '../styles/landing.css';
         <div class="step">
           <div class="step-number">1</div>
           <div class="step-content">
-            <h3>Grab your API key</h3>
-            <p>Sign up and copy your key. That's it.</p>
+            <h3>Sign up &amp; install the CLI</h3>
+            <p>One command. No email required.</p>
             <div class="code-block">
               <div class="code-header">
                 <span class="code-lang">bash</span>
                 <button class="copy-btn">Copy</button>
               </div>
-              <pre><code class="language-bash">curl -X POST https://api.flaglite.dev/v1/auth/signup \
-  -d '&#123;"email":"you@example.com", "password":"yourpassword"&#125;'</code></pre>
+              <pre><code class="language-bash"># Install CLI
+npm install -g flaglite
+
+# Sign up (no email needed!)
+flaglite signup</code></pre>
             </div>
           </div>
         </div>
@@ -116,22 +120,30 @@ if (await flags.enabled('new-checkout', &#123; userId: user.id &#125;)) &#123;
     <div class="container">
       <div class="cards">
         <div class="card">
-          <div class="card-icon">✨</div>
+          <div class="card-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3z"/></svg>
+          </div>
           <h3>Dead Simple</h3>
           <p>One SDK. One API call. No PhD required.</p>
         </div>
         <div class="card">
-          <div class="card-icon">💰</div>
+          <div class="card-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
           <h3>No MAU Tax</h3>
           <p>$19/month flat. Not $19 per 1,000 users.</p>
         </div>
         <div class="card">
-          <div class="card-icon">🔌</div>
+          <div class="card-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>
+          </div>
           <h3>API-First</h3>
           <p>SDKs for JS, Python, Go, Rust. Clean REST API.</p>
         </div>
         <div class="card">
-          <div class="card-icon">📖</div>
+          <div class="card-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c-1.2 0-2.4.6-3 1.7A3.6 3.6 0 0 0 4.6 9c-1 .6-1.7 1.8-1.7 3 0 1.2.7 2.4 1.7 3a3.6 3.6 0 0 0 4.4 4.3 3.6 3.6 0 0 0 6 0 3.6 3.6 0 0 0 4.4-4.3c1-.6 1.7-1.8 1.7-3 0-1.2-.7-2.4-1.7-3a3.6 3.6 0 0 0-4.4-4.3A3.6 3.6 0 0 0 12 3z"/><path d="m8 12 3 3 5-5"/></svg>
+          </div>
           <h3>Open Source</h3>
           <p>AGPL-3.0 licensed. Self-hostable. No vendor lock-in.</p>
         </div>
@@ -363,7 +375,7 @@ docker compose up -d</code></pre>
     <div class="container">
       <div class="footer-content">
         <div class="footer-brand">
-          <span class="logo">🚩 FlagLite</span>
+          <span class="logo"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="logo-icon"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg> FlagLite</span>
           <p>Feature flags for teams who ship fast.</p>
         </div>
         <div class="footer-links">
@@ -431,7 +443,6 @@ docker compose up -d</code></pre>
 
     // Theme toggle
     const themeToggle = document.getElementById('theme-toggle');
-    const themeIcon = themeToggle.querySelector('.theme-icon');
     const prismDark = document.getElementById('prism-dark');
     const prismLight = document.getElementById('prism-light');
 
@@ -444,7 +455,6 @@ docker compose up -d</code></pre>
     function setTheme(theme) {
       document.documentElement.setAttribute('data-theme', theme);
       localStorage.setItem('theme', theme);
-      themeIcon.textContent = theme === 'light' ? '☀️' : '🌙';
       
       // Update Prism theme
       if (theme === 'light') {
