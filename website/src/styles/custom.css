@@ -17,6 +17,13 @@
   --sl-color-text-accent: var(--sl-color-accent);
 }
 
+/* Light theme - let Starlight use defaults */
+:root[data-theme='light'] {
+  --sl-color-accent-low: #dcfce7;
+  --sl-color-accent: #16a34a;
+  --sl-color-accent-high: #15803d;
+}
+
 /* Dark theme overrides */
 :root[data-theme='dark'] {
   --sl-color-bg: #0a0a0b;
@@ -45,10 +52,13 @@ a:hover {
   color: var(--sl-color-accent-high);
 }
 
-/* Sidebar active item */
-[data-current="true"] > a {
+/* Sidebar active item - use text color only, not background */
+[aria-current="page"],
+[data-current="true"] > a,
+nav.sidebar a[aria-current="page"] {
   color: var(--sl-color-accent) !important;
   font-weight: 600;
+  background: transparent !important;
 }
 
 /* Hero-style headings */
