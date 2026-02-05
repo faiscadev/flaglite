@@ -66,11 +66,6 @@ jobs:
           FLAGLITE_API_BIN: ./target/release/flaglite-api
           FLAGLITE_CLI_BIN: ./target/release/flaglite
 
-      - name: Run E2E tests (Shell - Legacy)
-        run: |
-          chmod +x ./e2e/test-api.sh
-          VERBOSE=true ./e2e/test-api.sh
-
   e2e-production:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -94,10 +89,4 @@ jobs:
           FLAGLITE_API_URL: https://api.flaglite.dev
           FLAGLITE_API_BIN: ./target/release/flaglite-api
           FLAGLITE_CLI_BIN: ./target/release/flaglite
-        continue-on-error: true  # Don't fail the build, just report
-
-      - name: Run E2E tests against production (Shell - Legacy)
-        run: |
-          chmod +x ./e2e/test-api.sh
-          FLAGLITE_API_URL=https://api.flaglite.dev VERBOSE=true ./e2e/test-api.sh
         continue-on-error: true  # Don't fail the build, just report
