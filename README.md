@@ -2,18 +2,30 @@
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/faiscadev/flaglite/ci.yml?branch=main)](https://github.com/faiscadev/flaglite/actions)
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
+[![Self-Hosted](https://img.shields.io/badge/self--hosted-yes-green)]()
 [![GitHub Stars](https://img.shields.io/github/stars/faiscadev/flaglite)](https://github.com/faiscadev/flaglite)
 
-**Open source feature flags. Single binary. Works everywhere.**
+**Open-source feature flags you can self-host in 5 minutes. No MAU pricing. No vendor lock-in.**
+
+**License:** AGPL-3.0 — genuinely open source. Self-host forever, no strings attached.
 
 ---
 
 ## Why FlagLite
 
-- **Single binary, zero dependencies** — One 6.9MB binary. No JVM, no Docker, no runtime required.
-- **API-first** — Everything via REST API or CLI. Dashboard is optional.
-- **SQLite to Postgres** — Start with SQLite, scale to Postgres when you need it.
+- **Genuinely open source (AGPL-3.0)** — Not "source available." Actually open. Fork it, modify it, own it.
+- **No MAU tax** — Free forever self-hosted, or $19/mo flat for cloud. No per-seat, no usage tiers.
+- **5 minutes to first flag** — Single binary, zero dependencies. One 6.9MB download and you're live.
 - **Production SDKs** — First-class support for JS, Python, Go, and Rust.
+
+## vs. The Alternatives
+
+| | FlagLite | Typical SaaS |
+|---|---|---|
+| **Pricing** | Free forever (self-hosted) or $19/mo flat | Scales with MAU |
+| **Data** | Stays on your infrastructure | Sent to vendor |
+| **License** | AGPL-3.0 (genuinely open source) | Often "source available" |
+| **Lock-in** | Export anytime, standard formats | Proprietary APIs |
 
 ---
 
