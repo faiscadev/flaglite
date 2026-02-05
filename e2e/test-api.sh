@@ -176,18 +176,18 @@ test_flags() {
         return
     fi
     
-    # Create flag (project-scoped)
-    local flag_data='{"key":"test-flag","name":"Test Flag","enabled":true}'
+    # Create flag (project-scoped) - use unique key per test run
+    local flag_key="test-flag-$(date +%s)"
+    local flag_data="{\"key\":\"$flag_key\",\"name\":\"Test Flag\",\"enabled\":true}"
     local create_response=$(http POST "/projects/$PROJECT_ID/flags" "$flag_data" "$API_KEY")
-    local create_status=$(http_status POST "/projects/$PROJECT_ID/flags" "$flag_data" "$API_KEY")
     
-    if [ "$create_status" = "201" ] || [ "$create_status" = "200" ]; then
+    if echo "$create_response" | grep -q "\"key\":\"$flag_key\""; then
         pass "POST /projects/:id/flags - creates flag"
-    elif [ "$create_status" = "404" ]; then
-        fail "POST /projects/:id/flags - endpoint not found (404)"
+    elif echo "$create_response" | grep -q "not found"; then
+        fail "POST /projects/:id/flags - endpoint not found (404)" "$create_response"
         return
     else
-        fail "POST /projects/:id/flags - returned $create_status" "$create_response"
+        fail "POST /projects/:id/flags - failed" "$create_response"
     fi
     
     # List flags (project-scoped)
@@ -200,8 +200,8 @@ test_flags() {
         fail "GET /projects/:id/flags - returned $list_status" "$list_response"
     fi
     
-    # Get flag (project-scoped)
-    local eval_status=$(http_status GET "/projects/$PROJECT_ID/flags/test-flag" "" "$API_KEY")
+    # Get flag (project-scoped) - use the flag we just created
+    local eval_status=$(http_status GET "/projects/$PROJECT_ID/flags/$flag_key" "" "$API_KEY")
     
     if [ "$eval_status" = "200" ]; then
         pass "GET /projects/:id/flags/:key - gets flag"
@@ -210,7 +210,7 @@ test_flags() {
     fi
     
     # Toggle flag (project-scoped, requires environment param)
-    local toggle_status=$(http_status POST "/projects/$PROJECT_ID/flags/test-flag/toggle?environment=production" "" "$API_KEY")
+    local toggle_status=$(http_status POST "/projects/$PROJECT_ID/flags/$flag_key/toggle?environment=production" "" "$API_KEY")
     
     if [ "$toggle_status" = "200" ]; then
         pass "POST /projects/:id/flags/:key/toggle - toggles flag"
