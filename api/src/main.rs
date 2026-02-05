@@ -95,6 +95,8 @@ fn create_router(state: models::AppState) -> Router {
     Router::new()
         // Health check
         .route("/health", get(|| async { "OK" }))
+        // LLMs.txt for AI assistants
+        .route("/llms.txt", get(handlers::llms::llms_txt))
         // Auth routes
         .route("/v1/auth/signup", post(handlers::auth::signup))
         .route("/v1/auth/login", post(handlers::auth::login))
