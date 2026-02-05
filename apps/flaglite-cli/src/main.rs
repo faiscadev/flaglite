@@ -50,10 +50,24 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Create a new FlagLite account
-    Signup,
+    Signup {
+        /// Username (optional, auto-generated if not provided)
+        #[arg(long, short)]
+        username: Option<String>,
+        /// Password (for non-interactive use)
+        #[arg(long)]
+        password: Option<String>,
+    },
 
     /// Authenticate with FlagLite
-    Login,
+    Login {
+        /// Username
+        #[arg(long, short)]
+        username: Option<String>,
+        /// Password (for non-interactive use)
+        #[arg(long)]
+        password: Option<String>,
+    },
 
     /// Clear stored authentication
     Logout,
@@ -175,8 +189,12 @@ async fn main() -> Result<()> {
     }
 
     let result = match cli.command {
-        Commands::Signup => auth::signup(&mut config, &output).await,
-        Commands::Login => auth::login(&mut config, &output).await,
+        Commands::Signup { username, password } => {
+            auth::signup(&mut config, &output, username, password).await
+        }
+        Commands::Login { username, password } => {
+            auth::login(&mut config, &output, username, password).await
+        }
         Commands::Logout => auth::logout(&mut config, &output).await,
         Commands::Whoami => auth::whoami(&config, &output).await,
 

@@ -5,15 +5,25 @@ edition.workspace = true
 publish = false
 
 [dependencies]
-flaglite-client = { path = "../../crates/flaglite-client" }
-tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+# Async runtime
+tokio = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }
+
+# HTTP client for health checks
 reqwest = { workspace = true }
+
+# JSON parsing for CLI output
+serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
-uuid = { workspace = true }
+
+# Unique IDs
+uuid = { workspace = true, features = ["v4"] }
+
+# Error handling
 anyhow = { workspace = true }
 
-[dev-dependencies]
-serial_test = "3"
+# Unix signals for graceful shutdown
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
 
 [[test]]
 name = "auth"
