@@ -24,6 +24,7 @@ TEST_USER="test-$(date +%s)"
 TEST_PASSWORD="testpass123"
 API_KEY=""
 AUTH_TOKEN=""
+PROJECT_ID=""
 
 log() {
     echo -e "$1"
@@ -112,7 +113,10 @@ test_auth() {
     
     if echo "$signup_response" | grep -q "api_key"; then
         pass "POST /v1/auth/signup - creates user"
-        API_KEY=$(echo "$signup_response" | grep -o '"api_key":"[^"]*"' | cut -d'"' -f4)
+        # Extract API key from nested structure: {"api_key":{"key":"flg_..."}}
+        API_KEY=$(echo "$signup_response" | grep -o '"key":"flg_[^"]*"' | head -1 | cut -d'"' -f4)
+        # Also extract project ID for later use
+        PROJECT_ID=$(echo "$signup_response" | grep -o '"project":{"id":"[^"]*"' | cut -d'"' -f6)
     else
         fail "POST /v1/auth/signup - failed" "$signup_response"
         return 1
@@ -157,7 +161,7 @@ test_auth() {
 }
 
 # ============================================
-# Flags Tests
+# Flags Tests (project-scoped)
 # ============================================
 test_flags() {
     log "\n=== Flags Tests ==="
@@ -167,51 +171,56 @@ test_flags() {
         return
     fi
     
-    # Create flag
+    if [ -z "$PROJECT_ID" ]; then
+        skip "Flags tests - no project ID (signup response changed?)"
+        return
+    fi
+    
+    # Create flag (project-scoped)
     local flag_data='{"key":"test-flag","name":"Test Flag","enabled":true}'
-    local create_response=$(http POST "/v1/flags" "$flag_data" "$API_KEY")
-    local create_status=$(http_status POST "/v1/flags" "$flag_data" "$API_KEY")
+    local create_response=$(http POST "/projects/$PROJECT_ID/flags" "$flag_data" "$API_KEY")
+    local create_status=$(http_status POST "/projects/$PROJECT_ID/flags" "$flag_data" "$API_KEY")
     
     if [ "$create_status" = "201" ] || [ "$create_status" = "200" ]; then
-        pass "POST /v1/flags - creates flag"
+        pass "POST /projects/:id/flags - creates flag"
     elif [ "$create_status" = "404" ]; then
-        fail "POST /v1/flags - endpoint not found (404)"
+        fail "POST /projects/:id/flags - endpoint not found (404)"
         return
     else
-        fail "POST /v1/flags - returned $create_status" "$create_response"
+        fail "POST /projects/:id/flags - returned $create_status" "$create_response"
     fi
     
-    # List flags
-    local list_response=$(http GET "/v1/flags" "" "$API_KEY")
-    local list_status=$(http_status GET "/v1/flags" "" "$API_KEY")
+    # List flags (project-scoped)
+    local list_response=$(http GET "/projects/$PROJECT_ID/flags" "" "$API_KEY")
+    local list_status=$(http_status GET "/projects/$PROJECT_ID/flags" "" "$API_KEY")
     
     if [ "$list_status" = "200" ]; then
-        pass "GET /v1/flags - lists flags"
+        pass "GET /projects/:id/flags - lists flags"
     else
-        fail "GET /v1/flags - returned $list_status" "$list_response"
+        fail "GET /projects/:id/flags - returned $list_status" "$list_response"
     fi
     
-    # Evaluate flag
-    local eval_status=$(http_status GET "/v1/flags/test-flag" "" "$API_KEY")
+    # Get flag (project-scoped)
+    local eval_status=$(http_status GET "/projects/$PROJECT_ID/flags/test-flag" "" "$API_KEY")
     
     if [ "$eval_status" = "200" ]; then
-        pass "GET /v1/flags/:key - evaluates flag"
+        pass "GET /projects/:id/flags/:key - gets flag"
     else
-        fail "GET /v1/flags/:key - returned $eval_status"
+        fail "GET /projects/:id/flags/:key - returned $eval_status"
     fi
     
-    # Toggle flag
-    local toggle_status=$(http_status POST "/v1/flags/test-flag/toggle" "" "$API_KEY")
+    # Toggle flag (project-scoped, requires environment param)
+    local toggle_status=$(http_status POST "/projects/$PROJECT_ID/flags/test-flag/toggle?environment=production" "" "$API_KEY")
     
     if [ "$toggle_status" = "200" ]; then
-        pass "POST /v1/flags/:key/toggle - toggles flag"
+        pass "POST /projects/:id/flags/:key/toggle - toggles flag"
     else
-        fail "POST /v1/flags/:key/toggle - returned $toggle_status"
+        fail "POST /projects/:id/flags/:key/toggle - returned $toggle_status"
     fi
 }
 
 # ============================================
-# Projects Tests (if implemented)
+# Projects Tests
 # ============================================
 test_projects() {
     log "\n=== Projects Tests ==="
@@ -221,19 +230,30 @@ test_projects() {
         return
     fi
     
-    local status=$(http_status GET "/v1/projects" "" "$API_KEY")
+    # List projects (CLI-compatible path)
+    local status=$(http_status GET "/projects" "" "$API_KEY")
     
     if [ "$status" = "404" ]; then
-        skip "GET /v1/projects - endpoint not implemented"
+        skip "GET /projects - endpoint not implemented"
     elif [ "$status" = "200" ]; then
-        pass "GET /v1/projects - lists projects"
+        pass "GET /projects - lists projects"
     else
-        fail "GET /v1/projects - returned $status"
+        fail "GET /projects - returned $status"
+    fi
+    
+    # Create a new project
+    local create_data='{"name":"test-project"}'
+    local create_status=$(http_status POST "/projects" "$create_data" "$API_KEY")
+    
+    if [ "$create_status" = "200" ] || [ "$create_status" = "201" ]; then
+        pass "POST /projects - creates project"
+    else
+        fail "POST /projects - returned $create_status"
     fi
 }
 
 # ============================================
-# Environments Tests (if implemented)
+# Environments Tests
 # ============================================
 test_environments() {
     log "\n=== Environments Tests ==="
@@ -243,14 +263,20 @@ test_environments() {
         return
     fi
     
-    local status=$(http_status GET "/v1/environments" "" "$API_KEY")
+    if [ -z "$PROJECT_ID" ]; then
+        skip "Environments tests - no project ID"
+        return
+    fi
+    
+    # List environments for project (CLI-compatible path)
+    local status=$(http_status GET "/projects/$PROJECT_ID/environments" "" "$API_KEY")
     
     if [ "$status" = "404" ]; then
-        skip "GET /v1/environments - endpoint not implemented"
+        skip "GET /projects/:id/environments - endpoint not implemented"
     elif [ "$status" = "200" ]; then
-        pass "GET /v1/environments - lists environments"
+        pass "GET /projects/:id/environments - lists environments"
     else
-        fail "GET /v1/environments - returned $status"
+        fail "GET /projects/:id/environments - returned $status"
     fi
 }
 
