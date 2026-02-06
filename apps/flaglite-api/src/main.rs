@@ -132,6 +132,11 @@ fn create_router(state: models::AppState) -> Router {
             "/v1/projects/:project_id/flags/:key/toggle",
             post(handlers::cli::toggle_flag),
         )
+        // SDK evaluation endpoint (uses env API keys)
+        .route(
+            "/v1/flags/:key/evaluate",
+            get(handlers::flags::evaluate_flag),
+        )
         .layer(TraceLayer::new_for_http())
         .layer(cors)
         .with_state(state)
