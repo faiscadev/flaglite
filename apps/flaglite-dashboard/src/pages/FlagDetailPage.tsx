@@ -200,7 +200,7 @@ export function FlagDetailPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
+          <RefreshCw className="w-8 h-8 text-green-600 animate-spin" />
         </div>
       </Layout>
     );
@@ -213,7 +213,7 @@ export function FlagDetailPage() {
           <p className="text-gray-500">Flag not found</p>
           <Link
             to={`/projects/${projectId}`}
-            className="text-indigo-600 hover:underline mt-2 inline-block"
+            className="text-green-600 hover:underline mt-2 inline-block"
           >
             Back to flags
           </Link>
@@ -262,7 +262,7 @@ export function FlagDetailPage() {
                 whitespace-nowrap py-3 px-1 border-b-2 text-sm font-medium transition-colors cursor-pointer
                 ${
                   selectedEnv === env.name
-                    ? 'border-indigo-600 text-indigo-600'
+                    ? 'border-green-600 text-green-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }
               `}
@@ -355,7 +355,7 @@ export function FlagDetailPage() {
                   px-3 py-1.5 text-sm font-medium rounded-lg transition-colors cursor-pointer
                   ${
                     selectedSdk === lang.id
-                      ? 'bg-indigo-100 text-indigo-700'
+                      ? 'bg-green-100 text-green-700'
                       : 'text-gray-600 hover:bg-gray-100'
                   }
                 `}

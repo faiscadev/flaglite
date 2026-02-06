@@ -123,7 +123,7 @@ export function ProjectDetailPage() {
     return (
       <Layout>
         <div className="flex items-center justify-center h-64">
-          <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
+          <RefreshCw className="w-8 h-8 text-green-600 animate-spin" />
         </div>
       </Layout>
     );
@@ -182,7 +182,7 @@ export function ProjectDetailPage() {
                 whitespace-nowrap py-3 px-1 border-b-2 text-sm font-medium transition-colors cursor-pointer
                 ${
                   selectedEnv === env.name
-                    ? 'border-indigo-600 text-indigo-600'
+                    ? 'border-green-600 text-green-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }
               `}
@@ -196,7 +196,7 @@ export function ProjectDetailPage() {
       {/* Flags List */}
       {isLoading ? (
         <div className="flex items-center justify-center h-64">
-          <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
+          <RefreshCw className="w-8 h-8 text-green-600 animate-spin" />
         </div>
       ) : !flags || flags.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
@@ -237,7 +237,7 @@ export function ProjectDetailPage() {
                       to={`/projects/${projectId}/flags/${flag.key}`}
                       className="block"
                     >
-                      <div className="text-sm font-medium text-gray-900 hover:text-indigo-600">
+                      <div className="text-sm font-medium text-gray-900 hover:text-green-600">
                         {flag.name}
                       </div>
                       {flag.description && (
