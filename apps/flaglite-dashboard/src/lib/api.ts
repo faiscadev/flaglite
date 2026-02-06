@@ -86,8 +86,11 @@ export const projectsApi = {
   },
 
   create: async (data: CreateProjectRequest): Promise<CreateProjectResponse> => {
-    const response = await api.post<CreateProjectResponse>('/v1/projects', data);
-    return response.data;
+    // API returns just the project, so we need to fetch environments separately
+    const response = await api.post<Project>('/v1/projects', data);
+    const project = response.data;
+    const environments = await projectsApi.getEnvironments(project.id);
+    return { project, environments };
   },
 
   getEnvironments: async (projectId: string): Promise<Environment[]> => {

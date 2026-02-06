@@ -10,8 +10,11 @@ export interface User {
 export interface Project {
   id: string;
   name: string;
-  api_key: string;
+  slug?: string;
+  description?: string;
+  api_key?: string;  // Legacy field, no longer returned by API
   created_at: string;
+  updated_at?: string;
 }
 
 export interface Environment {

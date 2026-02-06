@@ -36,7 +36,7 @@ export function ProjectSettingsPage() {
   }, [currentProject, projectId, navigate, setCurrentProject, setSelectedProjectId]);
 
   const handleCopyApiKey = async () => {
-    if (!currentProject) return;
+    if (!currentProject?.api_key) return;
     try {
       await navigator.clipboard.writeText(currentProject.api_key);
       setCopiedApiKey(true);
@@ -109,36 +109,38 @@ export function ProjectSettingsPage() {
           </div>
         </div>
 
-        {/* API Key */}
-        <div className="bg-white rounded-xl border border-zinc-200 p-6">
-          <h2 className="font-semibold text-zinc-900 mb-4">Project API Key</h2>
-          <p className="text-sm text-zinc-500 mb-4">
-            Use this API key to authenticate requests to the FlagLite API for this project.
-          </p>
-          
-          <div className="flex items-center gap-2">
-            <code className="flex-1 px-3 py-2 bg-zinc-100 rounded-lg font-mono text-sm text-zinc-700 truncate">
-              {currentProject.api_key}
-            </code>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={handleCopyApiKey}
-            >
-              {copiedApiKey ? (
-                <>
-                  <Check className="w-4 h-4 mr-1 text-green-600" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4 mr-1" />
-                  Copy
-                </>
-              )}
-            </Button>
+        {/* API Key - only show if available */}
+        {currentProject.api_key && (
+          <div className="bg-white rounded-xl border border-zinc-200 p-6">
+            <h2 className="font-semibold text-zinc-900 mb-4">Project API Key</h2>
+            <p className="text-sm text-zinc-500 mb-4">
+              Use this API key to authenticate requests to the FlagLite API for this project.
+            </p>
+            
+            <div className="flex items-center gap-2">
+              <code className="flex-1 px-3 py-2 bg-zinc-100 rounded-lg font-mono text-sm text-zinc-700 truncate">
+                {currentProject.api_key}
+              </code>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleCopyApiKey}
+              >
+                {copiedApiKey ? (
+                  <>
+                    <Check className="w-4 h-4 mr-1 text-green-600" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4 mr-1" />
+                    Copy
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Danger Zone - placeholder for future features */}
         <div className="bg-white rounded-xl border border-red-200 p-6">

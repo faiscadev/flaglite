@@ -186,7 +186,7 @@ export function FlagDetailPage() {
   const handleCopyCode = async () => {
     if (!flag || !currentProject) return;
     const selectedEnvObj = environments.find((e) => e.name === selectedEnv);
-    const apiKey = selectedEnvObj?.api_key || currentProject.api_key;
+    const apiKey = selectedEnvObj?.api_key || currentProject.api_key || 'YOUR_API_KEY';
     const code = generateCodeSnippet(selectedSdk, flag.key, apiKey);
     
     await navigator.clipboard.writeText(code);
@@ -229,7 +229,7 @@ export function FlagDetailPage() {
   }
 
   const selectedEnvObj = environments.find((e) => e.name === selectedEnv);
-  const apiKey = selectedEnvObj?.api_key || currentProject.api_key;
+  const apiKey = selectedEnvObj?.api_key || currentProject.api_key || 'YOUR_API_KEY';
   const codeSnippet = generateCodeSnippet(selectedSdk, flag.key, apiKey);
 
   return (

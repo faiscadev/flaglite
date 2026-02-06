@@ -57,7 +57,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     if (project) {
       localStorage.setItem(STORAGE_KEYS.PROJECT, JSON.stringify(project));
-      localStorage.setItem(STORAGE_KEYS.PROJECT_API_KEY, project.api_key);
+      if (project.api_key) {
+        localStorage.setItem(STORAGE_KEYS.PROJECT_API_KEY, project.api_key);
+      }
       localStorage.setItem(STORAGE_KEYS.SELECTED_PROJECT, project.id);
     }
     if (environments) {
@@ -87,7 +89,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const setCurrentProject = useCallback((project: Project, environments: Environment[]) => {
     localStorage.setItem(STORAGE_KEYS.PROJECT, JSON.stringify(project));
-    localStorage.setItem(STORAGE_KEYS.PROJECT_API_KEY, project.api_key);
+    if (project.api_key) {
+      localStorage.setItem(STORAGE_KEYS.PROJECT_API_KEY, project.api_key);
+    }
     localStorage.setItem(STORAGE_KEYS.ENVIRONMENTS, JSON.stringify(environments));
     localStorage.setItem(STORAGE_KEYS.SELECTED_PROJECT, project.id);
     
