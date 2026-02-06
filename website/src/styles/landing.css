@@ -363,6 +363,32 @@ code {
   line-height: 1.7;
 }
 
+/* GUI Callout */
+.gui-callout {
+  max-width: 720px;
+  margin: 32px auto 0;
+  padding: 16px 20px;
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.gui-callout strong {
+  color: var(--accent);
+}
+
+.gui-callout a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.gui-callout a:hover {
+  color: var(--accent-hover);
+}
+
 /* Value Props */
 .value-props {
   padding: 100px 0;
