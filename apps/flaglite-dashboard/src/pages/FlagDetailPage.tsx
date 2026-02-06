@@ -259,7 +259,7 @@ export function FlagDetailPage() {
               key={env.id}
               onClick={() => setSelectedEnv(env.name)}
               className={`
-                whitespace-nowrap py-3 px-1 border-b-2 text-sm font-medium transition-colors
+                whitespace-nowrap py-3 px-1 border-b-2 text-sm font-medium transition-colors cursor-pointer
                 ${
                   selectedEnv === env.name
                     ? 'border-indigo-600 text-indigo-600'
@@ -326,7 +326,7 @@ export function FlagDetailPage() {
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
               }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded cursor-pointer"
               title="Copy to clipboard"
             >
               {copied ? (
@@ -352,7 +352,7 @@ export function FlagDetailPage() {
                 key={lang.id}
                 onClick={() => setSelectedSdk(lang.id)}
                 className={`
-                  px-3 py-1.5 text-sm font-medium rounded-lg transition-colors
+                  px-3 py-1.5 text-sm font-medium rounded-lg transition-colors cursor-pointer
                   ${
                     selectedSdk === lang.id
                       ? 'bg-indigo-100 text-indigo-700'
@@ -373,7 +373,7 @@ export function FlagDetailPage() {
 
           <button
             onClick={handleCopyCode}
-            className="absolute top-3 right-3 p-2 text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+            className="absolute top-3 right-3 p-2 text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors cursor-pointer"
             title="Copy code"
           >
             {copied ? (

@@ -30,7 +30,7 @@ export function Layout({ children }: LayoutProps) {
         <h1 className="text-xl font-bold text-indigo-600"><FlagIcon className="w-6 h-6 inline-block mr-1" />FlagLite</h1>
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg"
+          className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg cursor-pointer"
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -63,7 +63,7 @@ export function Layout({ children }: LayoutProps) {
                 logout();
                 setMobileMenuOpen(false);
               }}
-              className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
+              className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 cursor-pointer"
             >
               <LogOut className="w-5 h-5 mr-3" />
               Logout
@@ -110,7 +110,7 @@ export function Layout({ children }: LayoutProps) {
             )}
             <button
               onClick={logout}
-              className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+              className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
             >
               <LogOut className="w-5 h-5 mr-3" />
               Logout

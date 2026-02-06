@@ -102,7 +102,7 @@ export function ProjectsPage() {
             <button
               key={project.id}
               onClick={() => handleSelectProject(project.id)}
-              className="bg-white rounded-lg border border-gray-200 p-6 text-left hover:border-indigo-300 hover:shadow-md transition-all group"
+              className="bg-white rounded-lg border border-gray-200 p-6 text-left hover:border-indigo-300 hover:shadow-md transition-all group cursor-pointer"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">

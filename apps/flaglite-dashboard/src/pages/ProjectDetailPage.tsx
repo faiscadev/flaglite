@@ -179,7 +179,7 @@ export function ProjectDetailPage() {
               key={env.id}
               onClick={() => setSelectedEnv(env.name)}
               className={`
-                whitespace-nowrap py-3 px-1 border-b-2 text-sm font-medium transition-colors
+                whitespace-nowrap py-3 px-1 border-b-2 text-sm font-medium transition-colors cursor-pointer
                 ${
                   selectedEnv === env.name
                     ? 'border-indigo-600 text-indigo-600'
