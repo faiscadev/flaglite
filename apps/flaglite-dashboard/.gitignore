@@ -26,3 +26,8 @@ dist-ssr
 # Environment (keep .env.example)
 .env
 !.env.example
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/

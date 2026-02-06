@@ -1,0 +1,56 @@
+# Docker Compose for E2E Testing
+#
+# Usage:
+#   docker compose -f docker-compose.e2e.yml up -d
+#   npm run test:e2e
+#   docker compose -f docker-compose.e2e.yml down
+#
+# This spins up a complete test environment with:
+#   - PostgreSQL database (ephemeral)
+#   - FlagLite API server
+
+services:
+  # ============================================
+  # PostgreSQL Database (Ephemeral)
+  # ============================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: flaglite-e2e-postgres
+    environment:
+      POSTGRES_USER: flaglite
+      POSTGRES_PASSWORD: flaglite_e2e
+      POSTGRES_DB: flaglite_e2e
+    # No volumes - data is ephemeral for tests
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flaglite -d flaglite_e2e"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5433:5432"  # Different port to avoid conflict with dev db
+
+  # ============================================
+  # FlagLite API Server
+  # ============================================
+  api:
+    image: ghcr.io/faiscadev/flaglite:0.1.0
+    container_name: flaglite-e2e-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://flaglite:flaglite_e2e@postgres:5432/flaglite_e2e
+      JWT_SECRET: e2e-test-jwt-secret-not-for-production
+      RUST_LOG: info
+      # Test mode settings
+      FLAGLITE_ENV: test
+    ports:
+      - "8081:8080"  # Different port to avoid conflict with dev api
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+# No volumes - everything is ephemeral for E2E tests
