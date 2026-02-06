@@ -101,3 +101,4 @@ src/
 - `POST /v1/flags` - Create flag
 - `POST /v1/flags/:key/toggle` - Toggle flag
 - `DELETE /v1/flags/:key` - Delete flag
+# Dashboard CI/CD
