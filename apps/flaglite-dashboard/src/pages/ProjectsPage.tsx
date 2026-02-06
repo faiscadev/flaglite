@@ -85,7 +85,7 @@ export function ProjectsPage() {
       {/* Projects Grid */}
       {isLoading ? (
         <div className="flex items-center justify-center h-64">
-          <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
+          <RefreshCw className="w-8 h-8 text-green-600 animate-spin" />
         </div>
       ) : !projects || projects.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
@@ -102,7 +102,7 @@ export function ProjectsPage() {
             <button
               key={project.id}
               onClick={() => handleSelectProject(project.id)}
-              className="bg-white rounded-lg border border-gray-200 p-6 text-left hover:border-indigo-300 hover:shadow-md transition-all group cursor-pointer"
+              className="bg-white rounded-lg border border-gray-200 p-6 text-left hover:border-green-300 hover:shadow-md transition-all group cursor-pointer"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
@@ -113,7 +113,7 @@ export function ProjectsPage() {
                     Created {new Date(project.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-indigo-600 transition-colors" />
+                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-green-600 transition-colors" />
               </div>
             </button>
           ))}

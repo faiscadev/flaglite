@@ -124,7 +124,7 @@ export function SignupPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-indigo-600"><FlagIcon className="w-8 h-8 inline-block mr-2" />FlagLite</h1>
+          <h1 className="text-3xl font-bold text-green-600"><FlagIcon className="w-8 h-8 inline-block mr-2" />FlagLite</h1>
           <p className="text-gray-600 mt-2">Simple feature flag management</p>
         </div>
 
@@ -187,7 +187,7 @@ export function SignupPage() {
           <div className="mt-6 text-center">
             <Link
               to="/login"
-              className="text-sm text-indigo-600 hover:underline"
+              className="text-sm text-green-600 hover:underline"
             >
               Already have an account? Sign in
             </Link>

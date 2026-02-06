@@ -27,7 +27,7 @@ export function Layout({ children }: LayoutProps) {
     <div className="min-h-screen bg-gray-50">
       {/* Mobile Header */}
       <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-indigo-600"><FlagIcon className="w-6 h-6 inline-block mr-1" />FlagLite</h1>
+        <h1 className="text-xl font-bold text-green-600"><FlagIcon className="w-6 h-6 inline-block mr-1" />FlagLite</h1>
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg cursor-pointer"
@@ -49,7 +49,7 @@ export function Layout({ children }: LayoutProps) {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive(item.path)
-                      ? 'bg-indigo-50 text-indigo-600'
+                      ? 'bg-green-50 text-green-600'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
@@ -77,7 +77,7 @@ export function Layout({ children }: LayoutProps) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="px-6 py-4 border-b border-gray-200">
-            <h1 className="text-xl font-bold text-indigo-600"><FlagIcon className="w-6 h-6 inline-block mr-1" />FlagLite</h1>
+            <h1 className="text-xl font-bold text-green-600"><FlagIcon className="w-6 h-6 inline-block mr-1" />FlagLite</h1>
           </div>
 
           {/* Navigation */}
@@ -90,7 +90,7 @@ export function Layout({ children }: LayoutProps) {
                   to={item.path}
                   className={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isActive(item.path)
-                      ? 'bg-indigo-50 text-indigo-600'
+                      ? 'bg-green-50 text-green-600'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
