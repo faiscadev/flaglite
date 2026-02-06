@@ -73,6 +73,30 @@ services:
       retries: 3
       start_period: 10s
 
+  # ============================================
+  # FlagLite Dashboard
+  # ============================================
+  # Web UI for managing feature flags.
+  # Connects to the API service.
+  dashboard:
+    build:
+      context: ./apps/flaglite-dashboard
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    container_name: flaglite-dashboard
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      # Expose Dashboard on host port 3001
+      - "${DASHBOARD_PORT:-3001}:80"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
 # ============================================
 # Volumes
 # ============================================
