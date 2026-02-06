@@ -144,6 +144,10 @@ pub struct SignupResponse {
     pub user: User,
     pub api_key: ApiKeyCreated,
     pub token: String,
+    #[serde(default)]
+    pub project: Option<Project>,
+    #[serde(default)]
+    pub environments: Option<Vec<Environment>>,
 }
 
 /// Login request

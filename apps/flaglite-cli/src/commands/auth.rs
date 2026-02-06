@@ -62,6 +62,12 @@ pub async fn signup(
     config.token = Some(response.token);
     config.api_key = Some(response.api_key.key.clone());
     config.username = Some(response.user.username.clone());
+    
+    // Save default project if provided
+    if let Some(ref project) = response.project {
+        config.project_id = Some(project.id.to_string());
+    }
+    
     config.save_credentials()?;
 
     if output.is_json() {

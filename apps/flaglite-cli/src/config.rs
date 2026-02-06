@@ -50,6 +50,8 @@ pub struct Credentials {
     pub username: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub token: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub project_id: Option<String>,
 }
 
 impl Config {
@@ -122,6 +124,7 @@ impl Config {
         self.token = creds.token;
         self.api_key = creds.api_key;
         self.username = creds.username;
+        self.project_id = creds.project_id;
 
         // Use api_url from credentials if set
         if let Some(url) = creds.api_url {
@@ -167,6 +170,7 @@ impl Config {
             api_key: self.api_key.clone(),
             username: self.username.clone(),
             token: self.token.clone(),
+            project_id: self.project_id.clone(),
         };
 
         let content =
