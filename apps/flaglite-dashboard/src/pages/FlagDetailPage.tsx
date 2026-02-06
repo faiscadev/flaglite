@@ -132,29 +132,35 @@ export function FlagDetailPage() {
   }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { currentProject, environments, setCurrentProject } = useAuth();
+  const { currentProject, environments, setCurrentProject, setSelectedProjectId } = useAuth();
 
   const [selectedEnv, setSelectedEnv] = useState('development');
   const [selectedSdk, setSelectedSdk] = useState<SdkLanguage>('javascript');
   const [copied, setCopied] = useState(false);
   const [toggling, setToggling] = useState(false);
 
-  // Load project if not in context
+  // Load project if not in context or if different project
   useEffect(() => {
     const loadProject = async () => {
-      if (!currentProject && projectId) {
-        const projects = await projectsApi.list();
-        const project = projects.find((p) => p.id === projectId);
-        if (project) {
-          const envs = await projectsApi.getEnvironments(projectId);
-          setCurrentProject(project, envs);
-        } else {
+      if (projectId && (!currentProject || currentProject.id !== projectId)) {
+        try {
+          const projects = await projectsApi.list();
+          const project = projects.find((p) => p.id === projectId);
+          if (project) {
+            const envs = await projectsApi.getEnvironments(projectId);
+            setCurrentProject(project, envs);
+            setSelectedProjectId(projectId);
+          } else {
+            navigate('/projects');
+          }
+        } catch (err) {
+          console.error('Failed to load project:', err);
           navigate('/projects');
         }
       }
     };
     loadProject();
-  }, [currentProject, projectId, navigate, setCurrentProject]);
+  }, [currentProject, projectId, navigate, setCurrentProject, setSelectedProjectId]);
 
   const { data: flag, isLoading, refetch } = useQuery({
     queryKey: ['flag', projectId, flagKey],
@@ -210,9 +216,9 @@ export function FlagDetailPage() {
     return (
       <Layout>
         <div className="text-center py-12">
-          <p className="text-gray-500">Flag not found</p>
+          <p className="text-zinc-500">Flag not found</p>
           <Link
-            to={`/projects/${projectId}`}
+            to={`/projects/${projectId}/flags`}
             className="text-green-600 hover:underline mt-2 inline-block"
           >
             Back to flags
@@ -231,8 +237,8 @@ export function FlagDetailPage() {
       {/* Header */}
       <div className="mb-6">
         <Link
-          to={`/projects/${projectId}`}
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
+          to={`/projects/${projectId}/flags`}
+          className="inline-flex items-center text-sm text-zinc-600 hover:text-zinc-900 mb-4"
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
           Back to Flags
@@ -240,11 +246,11 @@ export function FlagDetailPage() {
 
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{flag.name}</h1>
+            <h1 className="text-2xl font-bold text-zinc-900">{flag.name}</h1>
             {flag.description && (
-              <p className="text-gray-600 mt-1">{flag.description}</p>
+              <p className="text-zinc-600 mt-1">{flag.description}</p>
             )}
-            <code className="inline-block mt-2 px-2 py-1 text-sm bg-gray-100 rounded font-mono">
+            <code className="inline-block mt-2 px-2 py-1 text-sm bg-zinc-100 rounded font-mono">
               {flag.key}
             </code>
           </div>

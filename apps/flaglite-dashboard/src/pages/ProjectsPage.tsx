@@ -16,7 +16,7 @@ export function ProjectsPage() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { setCurrentProject } = useAuth();
+  const { setCurrentProject, setSelectedProjectId } = useAuth();
 
   const { data: projects, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['projects'],
@@ -28,9 +28,10 @@ export function ProjectsPage() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       setCurrentProject(data.project, data.environments);
+      setSelectedProjectId(data.project.id);
       setIsModalOpen(false);
       setProjectName('');
-      navigate(`/projects/${data.project.id}`);
+      navigate(`/projects/${data.project.id}/flags`);
     },
     onError: (err) => {
       setError(getErrorMessage(err));
@@ -48,7 +49,8 @@ export function ProjectsPage() {
     if (project) {
       const environments = await projectsApi.getEnvironments(projectId);
       setCurrentProject(project, environments);
-      navigate(`/projects/${projectId}`);
+      setSelectedProjectId(projectId);
+      navigate(`/projects/${projectId}/flags`);
     }
   };
 
@@ -57,8 +59,8 @@ export function ProjectsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold text-zinc-900">Projects</h1>
+          <p className="text-zinc-500 mt-1">
             Manage your feature flag projects
           </p>
         </div>
@@ -88,9 +90,9 @@ export function ProjectsPage() {
           <RefreshCw className="w-8 h-8 text-green-600 animate-spin" />
         </div>
       ) : !projects || projects.length === 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-          <FolderKanban className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500 mb-4">No projects yet</p>
+        <div className="bg-white rounded-xl border border-zinc-200 p-12 text-center">
+          <FolderKanban className="w-12 h-12 text-zinc-400 mx-auto mb-4" />
+          <p className="text-zinc-500 mb-4">No projects yet</p>
           <Button onClick={() => setIsModalOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Create your first project
@@ -102,18 +104,18 @@ export function ProjectsPage() {
             <button
               key={project.id}
               onClick={() => handleSelectProject(project.id)}
-              className="bg-white rounded-lg border border-gray-200 p-6 text-left hover:border-green-300 hover:shadow-md transition-all group cursor-pointer"
+              className="bg-white rounded-xl border border-zinc-200 p-6 text-left hover:border-green-300 hover:shadow-md transition-all group cursor-pointer"
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate">
+                  <h3 className="font-semibold text-zinc-900 truncate">
                     {project.name}
                   </h3>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-zinc-500 mt-1">
                     Created {new Date(project.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-green-600 transition-colors" />
+                <ArrowRight className="w-5 h-5 text-zinc-400 group-hover:text-green-600 transition-colors" />
               </div>
             </button>
           ))}
