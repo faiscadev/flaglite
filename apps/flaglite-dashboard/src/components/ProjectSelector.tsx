@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronUpDown, Check, Plus } from 'lucide-react';
+import { ChevronsUpDown, Check, Plus } from 'lucide-react';
 import { projectsApi, getErrorMessage } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { Modal } from './Modal';
@@ -100,7 +100,7 @@ export function ProjectSelector() {
             )}
           </div>
           {/* Chevron */}
-          <ChevronUpDown className="w-4 h-4 text-zinc-400" />
+          <ChevronsUpDown className="w-4 h-4 text-zinc-400" />
         </button>
 
         {/* Dropdown */}
