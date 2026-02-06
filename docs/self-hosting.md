@@ -521,5 +521,5 @@ chown 1000:1000 /data
 ## Next Steps
 
 - [Configuration Reference](configuration.md) — All environment variables and Helm values
-- [API Documentation](https://docs.flaglite.dev/api) — REST API reference
-- [SDK Setup](https://docs.flaglite.dev/sdks) — Connect your application
+- [API Documentation](https://flaglite.dev/docs/api) — REST API reference
+- [SDK Setup](https://flaglite.dev/docs/sdks) — Connect your application

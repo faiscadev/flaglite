@@ -136,7 +136,7 @@ flaglite flags toggle new-checkout --env production
 flaglite flags list
 ```
 
-Full CLI reference: [docs.flaglite.dev/cli](https://docs.flaglite.dev/cli)
+Full CLI reference: [docs.flaglite.dev/cli](https://flaglite.dev/docs/cli)
 
 ---
 
@@ -156,8 +156,8 @@ Full CLI reference: [docs.flaglite.dev/cli](https://docs.flaglite.dev/cli)
 
 - **[Self-Hosting Guide](docs/self-hosting.md)** — Deploy FlagLite (Docker, Kubernetes, binary)
 - **[Configuration Reference](docs/configuration.md)** — Environment variables, Helm values, database setup
-- **[API Reference](https://docs.flaglite.dev/api)** — REST API documentation
-- **[CLI Reference](https://docs.flaglite.dev/cli)** — Command-line interface
+- **[API Reference](https://flaglite.dev/docs/api)** — REST API documentation
+- **[CLI Reference](https://flaglite.dev/docs/cli)** — Command-line interface
 
 ---
 

@@ -503,4 +503,4 @@ export RUST_LOG=debug
 ## Next Steps
 
 - [Self-Hosting Guide](self-hosting.md) — Deployment instructions
-- [API Documentation](https://docs.flaglite.dev/api) — REST API reference
+- [API Documentation](https://flaglite.dev/docs/api) — REST API reference
