@@ -1,3 +1,4 @@
+import { FlagIcon } from '../components/FlagIcon';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
@@ -36,7 +37,7 @@ export function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-indigo-600">🚩 FlagLite</h1>
+          <h1 className="text-3xl font-bold text-indigo-600"><FlagIcon className="w-8 h-8 inline-block mr-2" />FlagLite</h1>
           <p className="text-gray-600 mt-2">Simple feature flag management</p>
         </div>
 
