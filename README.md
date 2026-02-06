@@ -146,7 +146,7 @@ Full CLI reference: [docs.flaglite.dev/cli](https://docs.flaglite.dev/cli)
 - **Percentage rollouts** — Gradual feature releases with sticky bucketing
 - **Environments** — Separate dev, staging, production
 - **REST API** — Full control programmatically
-- **CLI** — Full parity with dashboard
+- **CLI** — Manage flags from the terminal
 - **Self-hosted** — SQLite by default, Postgres for scale
 - **Production SDKs** — JS, Python, Go, Rust
 
