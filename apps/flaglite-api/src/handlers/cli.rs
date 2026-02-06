@@ -51,6 +51,7 @@ pub struct CliEnvironment {
     pub name: String,
     pub slug: String,
     pub project_id: Uuid,
+    pub api_key: String,
     pub is_production: bool,
     pub created_at: DateTime<Utc>,
 }
@@ -62,6 +63,7 @@ impl CliEnvironment {
             name: e.name.clone(),
             slug: e.name.to_lowercase(),
             project_id: Uuid::parse_str(&e.project_id).unwrap_or_else(|_| Uuid::nil()),
+            api_key: e.api_key,
             is_production: e.name == "production",
             created_at: e.created_at,
         }
