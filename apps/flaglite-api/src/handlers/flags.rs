@@ -89,6 +89,8 @@ pub async fn evaluate_flag(
 }
 
 /// List all flags for a project
+// Kept for future use
+#[allow(dead_code)]
 pub async fn list_flags(
     State(state): State<AppState>,
     AuthProject(project): AuthProject,
@@ -166,6 +168,8 @@ pub async fn list_flags(
 }
 
 /// Create a new flag
+// Kept for future use
+#[allow(dead_code)]
 pub async fn create_flag(
     State(state): State<AppState>,
     AuthProject(project): AuthProject,
@@ -250,6 +254,8 @@ pub async fn create_flag(
 }
 
 /// Update flag value for a specific environment
+// Kept for future use
+#[allow(dead_code)]
 pub async fn update_flag_value(
     State(state): State<AppState>,
     AuthProject(project): AuthProject,
@@ -333,6 +339,8 @@ pub async fn update_flag_value(
 }
 
 /// Toggle a flag in a specific environment
+// Kept for future use
+#[allow(dead_code)]
 pub async fn toggle_flag(
     State(state): State<AppState>,
     AuthProject(project): AuthProject,

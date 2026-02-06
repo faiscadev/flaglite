@@ -70,8 +70,7 @@ async fn test_signup_saves_project_id_to_config() {
 
     assert!(
         credentials_path.exists(),
-        "Credentials file should exist at {:?}",
-        credentials_path
+        "Credentials file should exist at {credentials_path:?}"
     );
 
     let content = fs::read_to_string(&credentials_path).expect("Failed to read credentials file");
@@ -82,8 +81,7 @@ async fn test_signup_saves_project_id_to_config() {
 
     assert!(
         creds.get("project_id").is_some(),
-        "Credentials should contain project_id. Got: {}",
-        content
+        "Credentials should contain project_id. Got: {content}"
     );
 
     let project_id = creds["project_id"]

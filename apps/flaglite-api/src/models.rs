@@ -183,12 +183,16 @@ pub struct FlagValue {
     pub updated_at: DateTime<Utc>,
 }
 
+// Kept for future use
+#[allow(dead_code)]
 #[derive(Debug, Serialize)]
 pub struct FlagEnvironmentValue {
     pub enabled: bool,
     pub rollout: i32,
 }
 
+// Kept for future use
+#[allow(dead_code)]
 #[derive(Debug, Serialize)]
 pub struct FlagResponse {
     pub key: String,
@@ -203,6 +207,8 @@ pub struct FlagEvaluationResponse {
     pub enabled: bool,
 }
 
+// Kept for future use
+#[allow(dead_code)]
 #[derive(Debug, Serialize)]
 pub struct FlagToggleResponse {
     pub key: String,
