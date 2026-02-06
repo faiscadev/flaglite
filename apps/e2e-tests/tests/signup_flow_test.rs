@@ -86,11 +86,10 @@ async fn test_signup_saves_project_id_to_config() {
         content
     );
 
-    let project_id = creds["project_id"].as_str().expect("project_id should be a string");
-    assert!(
-        !project_id.is_empty(),
-        "project_id should not be empty"
-    );
+    let project_id = creds["project_id"]
+        .as_str()
+        .expect("project_id should be a string");
+    assert!(!project_id.is_empty(), "project_id should not be empty");
 }
 
 /// Test the complete signup flow: signup -> create flag -> verify flag exists.
@@ -111,7 +110,10 @@ async fn test_signup_flow_complete() {
     );
 
     let signup_info = signup_result.unwrap();
-    assert!(!signup_info.username.is_empty(), "Username should not be empty");
+    assert!(
+        !signup_info.username.is_empty(),
+        "Username should not be empty"
+    );
     assert!(
         signup_info.api_key.starts_with("flg_"),
         "API key should start with 'flg_'"
@@ -160,7 +162,10 @@ async fn test_signup_enables_all_flag_operations() {
 
     // List flags
     let flags = user.flags_list().expect("flags list failed");
-    assert!(flags.iter().any(|f| f.key == flag_key), "Flag should be in list");
+    assert!(
+        flags.iter().any(|f| f.key == flag_key),
+        "Flag should be in list"
+    );
 
     // Get flag
     let flag = user.flags_get(&flag_key).expect("flags get failed");

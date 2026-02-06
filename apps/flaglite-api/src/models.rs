@@ -268,7 +268,7 @@ pub struct ToggleFlagQuery {
     pub environment: String,
 }
 
-#[allow(dead_code)] // Kept for future SDK use  
+#[allow(dead_code)] // Kept for future SDK use
 #[derive(Debug, Deserialize)]
 pub struct EvaluateFlagQuery {
     pub user_id: Option<String>,
