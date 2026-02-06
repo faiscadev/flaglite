@@ -109,6 +109,13 @@ impl CliFlag {
     }
 }
 
+/// Environment value for a flag
+#[derive(Debug, Serialize)]
+pub struct FlagEnvironmentValue {
+    pub enabled: bool,
+    pub rollout: i32,
+}
+
 /// Flag with state matching CLI expectations
 #[derive(Debug, Serialize)]
 pub struct CliFlagWithState {
@@ -116,6 +123,8 @@ pub struct CliFlagWithState {
     pub flag: CliFlag,
     pub enabled: bool,
     pub value: Option<serde_json::Value>,
+    /// Environment-specific flag states (for dashboard)
+    pub environments: std::collections::HashMap<String, FlagEnvironmentValue>,
 }
 
 /// Request to create a project
@@ -256,16 +265,35 @@ pub async fn list_flags(
 
     let flags = state.storage.list_flags_by_project(&project_id).await?;
 
-    // Get environment for state lookup (default to production)
-    let env_name = query.environment.as_deref().unwrap_or("production");
-    let environment = state
+    // Get all environments for the project
+    let environments = state
+        .storage
+        .list_environments_by_project(&project_id)
+        .await?;
+
+    // Get environment for state lookup (default to development for CLI backward compat)
+    let env_name = query.environment.as_deref().unwrap_or("development");
+    let current_environment = state
         .storage
         .get_environment_by_name(&project_id, env_name)
         .await?;
 
     let mut responses = Vec::new();
     for flag in flags {
-        let enabled = if let Some(ref env) = environment {
+        // Build environments map with all environment states
+        let mut env_values = std::collections::HashMap::new();
+        for env in &environments {
+            let flag_value = state.storage.get_flag_value(&flag.id, &env.id).await?;
+            env_values.insert(
+                env.name.clone(),
+                FlagEnvironmentValue {
+                    enabled: flag_value.as_ref().map(|fv| fv.enabled).unwrap_or(false),
+                    rollout: flag_value.as_ref().map(|fv| fv.rollout_percentage).unwrap_or(100),
+                },
+            );
+        }
+
+        let enabled = if let Some(ref env) = current_environment {
             state
                 .storage
                 .get_flag_value(&flag.id, &env.id)
@@ -280,6 +308,7 @@ pub async fn list_flags(
             flag: CliFlag::from_flag(flag),
             enabled,
             value: None,
+            environments: env_values,
         });
     }
 
@@ -393,8 +422,27 @@ pub async fn get_flag(
         .await?
         .ok_or_else(|| AppError::NotFound(format!("Flag '{key}' not found")))?;
 
+    // Get all environments for the project
+    let environments = state
+        .storage
+        .list_environments_by_project(&project_id)
+        .await?;
+
+    // Build environments map with all environment states
+    let mut env_values = std::collections::HashMap::new();
+    for env in &environments {
+        let flag_value = state.storage.get_flag_value(&flag.id, &env.id).await?;
+        env_values.insert(
+            env.name.clone(),
+            FlagEnvironmentValue {
+                enabled: flag_value.as_ref().map(|fv| fv.enabled).unwrap_or(false),
+                rollout: flag_value.as_ref().map(|fv| fv.rollout_percentage).unwrap_or(100),
+            },
+        );
+    }
+
     // Get environment for state lookup
-    let env_name = query.environment.as_deref().unwrap_or("production");
+    let env_name = query.environment.as_deref().unwrap_or("development");
     let environment = state
         .storage
         .get_environment_by_name(&project_id, env_name)
@@ -415,6 +463,7 @@ pub async fn get_flag(
         flag: CliFlag::from_flag(flag),
         enabled,
         value: None,
+        environments: env_values,
     }))
 }
 
@@ -489,10 +538,28 @@ pub async fn toggle_flag(
         }
     };
 
+    // Get all environments and build environments map
+    let environments = state
+        .storage
+        .list_environments_by_project(&project_id)
+        .await?;
+    let mut env_values = std::collections::HashMap::new();
+    for env in &environments {
+        let flag_value = state.storage.get_flag_value(&flag.id, &env.id).await?;
+        env_values.insert(
+            env.name.clone(),
+            FlagEnvironmentValue {
+                enabled: flag_value.as_ref().map(|fv| fv.enabled).unwrap_or(false),
+                rollout: flag_value.as_ref().map(|fv| fv.rollout_percentage).unwrap_or(100),
+            },
+        );
+    }
+
     Ok(Json(CliFlagWithState {
         flag: CliFlag::from_flag(flag),
         enabled: new_enabled,
         value: None,
+        environments: env_values,
     }))
 }
 

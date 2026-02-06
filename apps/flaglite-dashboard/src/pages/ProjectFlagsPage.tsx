@@ -118,11 +118,21 @@ export function ProjectFlagsPage() {
   };
 
   const getFlagStatus = (flag: Flag): boolean => {
-    return flag.environments[selectedEnv]?.enabled ?? false;
+    // Handle both formats: nested environments object or flat enabled field
+    if (flag.environments && flag.environments[selectedEnv]) {
+      return flag.environments[selectedEnv].enabled ?? false;
+    }
+    // Fallback to flat format from CLI API
+    return (flag as unknown as { enabled?: boolean }).enabled ?? false;
   };
 
   const getRollout = (flag: Flag): number => {
-    return flag.environments[selectedEnv]?.rollout ?? 100;
+    // Handle both formats: nested environments object or flat rollout field
+    if (flag.environments && flag.environments[selectedEnv]) {
+      return flag.environments[selectedEnv].rollout ?? 100;
+    }
+    // Fallback to default rollout
+    return 100;
   };
 
   if (!currentProject) {
