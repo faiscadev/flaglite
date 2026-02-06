@@ -137,16 +137,25 @@ pub struct Environment {
 pub struct EnvironmentResponse {
     pub id: String,
     pub name: String,
+    pub slug: String,
+    pub project_id: String,
     pub api_key: String,
+    #[serde(default)]
+    pub is_production: bool,
     pub created_at: DateTime<Utc>,
 }
 
 impl From<Environment> for EnvironmentResponse {
     fn from(e: Environment) -> Self {
+        let slug = e.name.to_lowercase().replace(' ', "-");
+        let is_production = e.name.to_lowercase() == "production";
         EnvironmentResponse {
             id: e.id,
             name: e.name,
+            slug,
+            project_id: e.project_id,
             api_key: e.api_key,
+            is_production,
             created_at: e.created_at,
         }
     }
