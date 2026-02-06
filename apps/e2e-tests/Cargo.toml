@@ -36,3 +36,7 @@ path = "tests/projects_test.rs"
 [[test]]
 name = "flags"
 path = "tests/flags_test.rs"
+
+[[test]]
+name = "signup_flow"
+path = "tests/signup_flow_test.rs"
